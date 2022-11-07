@@ -1,4 +1,12 @@
 import BloonsAI
+import struct
 
-result = BloonsAI.sum_as_string(1,2)
-print(result)
+mydict = BloonsAI.initialize()
+for key in mydict:
+    print(key, ": ", mydict[key])
+
+money = BloonsAI.get_value_double(mydict["cash"], 8)
+print("Retrieved Money: ", money)
+print("Retrieved Health: ", BloonsAI.get_value_double(mydict["health"], 8))
+print("Retrieved Towers: ", BloonsAI.get_value_int(mydict["tower_count"], 4))
+print("Retrieved Round: ", BloonsAI.get_value_int(mydict["round"], 4))
