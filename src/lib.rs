@@ -217,7 +217,7 @@ fn initialize() -> Py<PyAny> {
 }
 
 #[pyfunction]
-fn get_value_double(addr: usize, val: usize) -> PyResult<f64> {
+fn get_value(addr: usize, val: usize) -> PyResult<f64> {
     let processes = memory::enum_proc()
         .unwrap()
         .into_iter()
@@ -242,59 +242,59 @@ fn get_value_double(addr: usize, val: usize) -> PyResult<f64> {
     let process = Process::open(bloons_pid).unwrap();
 
     let res_addr_vec = process.read_memory(addr, val).unwrap();
-    let value: f64 = f64::from_le_bytes(vec_to_arr(res_addr_vec));
-
-    println!(
-        "Value: {}",
-        value
-    );
-
-    Ok(value)
-}
-
-
-#[pyfunction]
-fn get_value_int(addr: usize, val:usize) -> PyResult<i32> {
-    let processes = memory::enum_proc()
-        .unwrap()
-        .into_iter()
-        .flat_map(memory::Process::open)
-        .flat_map(|proc| match proc.name() {
-            Ok(name) => Ok(ProcessItem {
-                pid: proc.pid(),
-                name,
-            }),
-            Err(err) => Err(err),
-        })
-        .collect::<Vec<_>>();
-
-    let mut bloons_pid: u32 = 0;
-
-    for p in processes.into_iter() {
-        if p.name == "BloonsTD6.exe" {
-            bloons_pid = p.pid;
-        }
+    let value;
+    if val == 4 {
+        value = i32::from_le_bytes(vec_to_arr(res_addr_vec)) as f64;
+    } else {
+        value = f64::from_le_bytes(vec_to_arr(res_addr_vec));
     }
 
-    let process = Process::open(bloons_pid).unwrap();
-
-    let res_addr_vec = process.read_memory(addr, val).unwrap();
-    let value: i32 = i32::from_be_bytes(vec_to_arr(res_addr_vec));
-
-    println!(
-        "Value: {}",
-        value
-    );
-
     Ok(value)
 }
+
+
+// #[pyfunction]
+// fn get_value_int(addr: usize, val:usize) -> PyResult<i32> {
+//     let processes = memory::enum_proc()
+//         .unwrap()
+//         .into_iter()
+//         .flat_map(memory::Process::open)
+//         .flat_map(|proc| match proc.name() {
+//             Ok(name) => Ok(ProcessItem {
+//                 pid: proc.pid(),
+//                 name,
+//             }),
+//             Err(err) => Err(err),
+//         })
+//         .collect::<Vec<_>>();
+
+//     let mut bloons_pid: u32 = 0;
+
+//     for p in processes.into_iter() {
+//         if p.name == "BloonsTD6.exe" {
+//             bloons_pid = p.pid;
+//         }
+//     }
+
+//     let process = Process::open(bloons_pid).unwrap();
+
+//     let res_addr_vec = process.read_memory(addr, val).unwrap();
+//     let value: i32 = i32::from_be_bytes(vec_to_arr(res_addr_vec));
+
+//     println!(
+//         "Value: {}",
+//         value
+//     );
+
+//     Ok(value)
+// }
 
 /// A Python module implemented in Rust.
 #[pymodule]
 fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_function(wrap_pyfunction!(initialize, m)?)?;
-    m.add_function(wrap_pyfunction!(get_value_double, m)?)?;
-    m.add_function(wrap_pyfunction!(get_value_int, m)?)?;
+    m.add_function(wrap_pyfunction!(get_value, m)?)?;
+    // m.add_function(wrap_pyfunction!(get_value_int, m)?)?;
     Ok(())
 }
