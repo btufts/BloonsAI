@@ -10,6 +10,7 @@ use str;
 use std::fs::File;
 use std::path::Path;
 use std::io::{BufRead, BufReader, Write};
+use std::{thread, time};
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -172,6 +173,11 @@ fn initialize() -> Py<PyAny> {
         inter_addr
     );
 
+    for i in 0..10 {
+        println!("{}", 10-i);
+        thread::sleep(time::Duration::from_secs(1));
+    }
+
     let game_addr: usize = inter_addr-696;
 
     // Numbers are decimal
@@ -181,10 +187,6 @@ fn initialize() -> Py<PyAny> {
 
     // FINDING HEALTH ADDRESS
     let inter_addr: usize = game_addr+720;
-    println!(
-        "Intermediate Address: {:#02X}",
-        inter_addr
-    );
 
     let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
     let health_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
