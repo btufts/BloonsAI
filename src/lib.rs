@@ -7,6 +7,9 @@ use memory::Process;
 use scan::{Scan, Scannable};
 use winapi::um::winnt;
 use str;
+use std::fs::File;
+use std::path::Path;
+use std::io::{BufRead, BufReader, Write};
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -32,6 +35,27 @@ fn vec_to_arr<T, const N: usize>(v: Vec<T>) -> [T; N] {
 #[pyfunction]
 fn initialize() -> Py<PyAny> {
     let mut addrs: HashMap<String,usize> = HashMap::new();
+
+    let path = Path::new("cache.txt");
+    
+    if(path.exists()){
+        let file = File::open(&path).unwrap();
+        let reader = BufReader::new(file);
+        for (index, line) in reader.lines().enumerate(){
+            let line = line.unwrap();
+            let items: Vec<&str> = line.split(" ").collect();
+            addrs.insert(
+                items[0].to_string(), items[1].parse::<usize>().unwrap()
+            );
+        }
+
+        return Python::with_gil(|py: Python| {
+            addrs.to_object(py)
+        });
+        
+    } else {
+        println!("No Cache, beginning search");
+    }
 
     let processes = memory::enum_proc()
         .unwrap()
@@ -210,6 +234,13 @@ fn initialize() -> Py<PyAny> {
         "round".to_string(), round_addr+40
     );
 
+    let mut file = File::create("cache.txt").unwrap();
+
+    for (key, value) in addrs.iter() {
+        let v = vec![key.to_string(), " ".to_string(), value.to_string()];
+        let line = v.concat();
+        writeln!(file, "{}", line);
+    }
 
     return Python::with_gil(|py: Python| {
         addrs.to_object(py)
@@ -251,43 +282,6 @@ fn get_value(addr: usize, val: usize) -> PyResult<f64> {
 
     Ok(value)
 }
-
-
-// #[pyfunction]
-// fn get_value_int(addr: usize, val:usize) -> PyResult<i32> {
-//     let processes = memory::enum_proc()
-//         .unwrap()
-//         .into_iter()
-//         .flat_map(memory::Process::open)
-//         .flat_map(|proc| match proc.name() {
-//             Ok(name) => Ok(ProcessItem {
-//                 pid: proc.pid(),
-//                 name,
-//             }),
-//             Err(err) => Err(err),
-//         })
-//         .collect::<Vec<_>>();
-
-//     let mut bloons_pid: u32 = 0;
-
-//     for p in processes.into_iter() {
-//         if p.name == "BloonsTD6.exe" {
-//             bloons_pid = p.pid;
-//         }
-//     }
-
-//     let process = Process::open(bloons_pid).unwrap();
-
-//     let res_addr_vec = process.read_memory(addr, val).unwrap();
-//     let value: i32 = i32::from_be_bytes(vec_to_arr(res_addr_vec));
-
-//     println!(
-//         "Value: {}",
-//         value
-//     );
-
-//     Ok(value)
-// }
 
 /// A Python module implemented in Rust.
 #[pymodule]
