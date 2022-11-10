@@ -250,6 +250,257 @@ fn initialize() -> Py<PyAny> {
 }
 
 #[pyfunction]
+fn initialize_restart() -> Py<PyAny> {
+    let mut addrs: HashMap<String,usize> = HashMap::new();
+
+    let processes = memory::enum_proc()
+        .unwrap()
+        .into_iter()
+        .flat_map(memory::Process::open)
+        .flat_map(|proc| match proc.name() {
+            Ok(name) => Ok(ProcessItem {
+                pid: proc.pid(),
+                name,
+            }),
+            Err(err) => Err(err),
+        })
+        .collect::<Vec<_>>();
+
+    let mut bloons_pid: u32 = 0;
+
+    for p in processes.into_iter() {
+        if p.name == "BloonsTD6.exe" {
+            bloons_pid = p.pid;
+        }
+    }
+
+    println!("Pid: {}", bloons_pid);
+
+    let process = Process::open(bloons_pid).unwrap();
+    println!("Opened process {:?}", process);
+
+    let mask = winnt::PAGE_EXECUTE_READWRITE
+        | winnt::PAGE_EXECUTE_WRITECOPY
+        | winnt::PAGE_READWRITE
+        | winnt::PAGE_WRITECOPY;
+
+    let regions = process
+        .memory_regions()
+        .into_iter()
+        .filter(|p| (p.Protect & mask) != 0)
+        .collect::<Vec<_>>();
+
+    let mut cash_addrs: Vec<usize> = Vec::new();
+
+    let scan = ret_scan("650.0f64".to_owned()).unwrap();
+    let last_scan = process.scan_regions(&regions, scan);
+
+    for r in last_scan.iter() {
+        for l in r.locations.iter() {
+            cash_addrs.push(l);
+        }
+    }
+
+    println!(
+        "Cash Addresses: {}",
+        cash_addrs.len()
+    );
+
+    let mut cash_addr: usize = 0;
+
+    let mut inter_addrs: Vec<usize> = Vec::new();
+    let mut search: String;
+    let borrowed_string: &str = "u64";
+
+    for addr in cash_addrs.iter(){
+        search = (addr-40).to_string();
+        search.push_str(borrowed_string);
+        let scan = ret_scan(search.to_owned()).unwrap();
+        let last_scan = process.scan_regions(&regions, scan);
+    
+        for r in last_scan.iter() {
+            for l in r.locations.iter() {
+                inter_addrs.push(l);
+            }
+        }
+
+        if inter_addrs.len() != 0 {
+            cash_addr = *addr;
+            break;
+        }
+    }
+
+    println!(
+        "Address of Money: {:#02X}",
+        cash_addr
+    );
+
+    addrs.insert(
+        "cash".to_string(), cash_addr
+    );
+
+    println!(
+        "Intermediate Addresses: {}",
+        inter_addrs.len()
+    );
+
+    let mut inter_addr: usize = 0;
+    let mut inter_addrs2: Vec<usize> = Vec::new();
+
+    for addr in inter_addrs.iter() {
+        search = (addr-16).to_string();
+        search.push_str(borrowed_string);
+        let scan = ret_scan(search.to_owned()).unwrap();
+        let last_scan = process.scan_regions(&regions, scan);
+        // let potential_addr = last_scan
+        //     .iter()
+        //     .flat_map(|r| r.locations.iter())
+        //     .next();
+        for r in last_scan.iter() {
+            for l in r.locations.iter() {
+                inter_addrs2.push(l);
+            }
+        }
+        if inter_addrs2.len() != 0 {
+            // inter_addr = potential_addr.unwrap();
+            break;
+        }
+    }
+
+    println!(
+        "Intermediate Addresses: {}",
+        inter_addrs2.len()
+    );
+
+    inter_addrs.clear();
+
+    for addr in inter_addrs2.iter(){
+        search = (addr-48).to_string();
+        search.push_str(borrowed_string);
+        let scan = ret_scan(search.to_owned()).unwrap();
+        let last_scan = process.scan_regions(&regions, scan);
+        // let potential_addr = last_scan
+        //     .iter()
+        //     .flat_map(|r| r.locations.iter())
+        //     .next();
+        for r in last_scan.iter() {
+            for l in r.locations.iter() {
+                inter_addrs.push(l);
+            }
+        }
+        if inter_addrs.len() != 0 {
+            // inter_addr = potential_addr.unwrap();
+            break;
+        }
+    }
+
+    println!(
+        "Intermediate Addresses: {}",
+        inter_addrs.len()
+    );
+
+    for addr in inter_addrs {
+        search = (addr-24).to_string();
+        search.push_str(borrowed_string);
+        let scan = ret_scan(search.to_owned()).unwrap();
+        let last_scan = process.scan_regions(&regions, scan);
+        let potential_addr = last_scan
+            .iter()
+            .flat_map(|r| r.locations.iter())
+            .next();
+        if potential_addr != None {
+            inter_addr = potential_addr.unwrap();
+            break;
+        } 
+    }
+
+    println!(
+        "Intermediate Address: {:#02X}",
+        inter_addr
+    );
+
+    for i in 0..10 {
+        println!("{}", 10-i);
+        thread::sleep(time::Duration::from_secs(1));
+    }
+
+    let game_addr: usize = inter_addr-696;
+
+    println!(
+        "Game Address: {:#02X}",
+        game_addr
+    );
+
+    // Numbers are decimal
+    // health: game_addr+720 -> +40 (double)
+    // towercount: game_addr+128-> +24 -> +48 -> +16 (int32)
+    // round-1: game_addr+728-> +144 -> +224 -> +40 (double?)
+
+    // FINDING HEALTH ADDRESS
+    let inter_addr: usize = game_addr+720;
+
+    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
+    let health_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+    println!(
+        "Health Address: {:#02X}",
+        health_addr+40
+    );
+
+    addrs.insert(
+        "health".to_string(), health_addr+40
+    );
+
+    // FINDING TOWERCOUNT ADDRESS
+    let inter_addr: usize = game_addr+128;
+    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
+    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+    let res_addr_vec = process.read_memory(inter_addr+24, 8).unwrap();
+    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+    let res_addr_vec = process.read_memory(inter_addr+48, 8).unwrap();
+    let tower_count_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+
+    println!(
+        "Tower Count Address: {:#02X}",
+        tower_count_addr+16
+    );
+
+    addrs.insert(
+        "tower_count".to_string(), tower_count_addr+16
+    );
+
+
+    // FINDING ROUND ADDRESS
+    let inter_addr: usize = game_addr+728;
+    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
+    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+    let res_addr_vec = process.read_memory(inter_addr+144, 8).unwrap();
+    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+    let res_addr_vec = process.read_memory(inter_addr+224, 8).unwrap();
+    let round_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+
+    println!(
+        "Round Address: {:#02X}",
+        round_addr+40
+    );
+
+    addrs.insert(
+        "round".to_string(), round_addr+40
+    );
+
+    let mut file = File::create("cache.txt").unwrap();
+
+    for (key, value) in addrs.iter() {
+        let v = vec![key.to_string(), " ".to_string(), value.to_string()];
+        let line = v.concat();
+        writeln!(file, "{}", line);
+    }
+
+    return Python::with_gil(|py: Python| {
+        addrs.to_object(py)
+    });
+}
+
+#[pyfunction]
 fn get_value(addr: usize, val: usize) -> PyResult<f64> {
     let processes = memory::enum_proc()
         .unwrap()
@@ -291,6 +542,6 @@ fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_function(wrap_pyfunction!(initialize, m)?)?;
     m.add_function(wrap_pyfunction!(get_value, m)?)?;
-    // m.add_function(wrap_pyfunction!(get_value_int, m)?)?;
+    m.add_function(wrap_pyfunction!(initialize_restart, m)?)?;
     Ok(())
 }
