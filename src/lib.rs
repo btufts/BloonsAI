@@ -8,9 +8,11 @@ use scan::{Scan, Scannable};
 use winapi::um::winnt;
 use str;
 use std::fs::File;
+use std::fs;
 use std::path::Path;
 use std::io::{BufRead, BufReader, Write};
 use std::{thread, time};
+use std::num::Wrapping;
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -31,6 +33,81 @@ pub fn ret_scan(search: String) -> Result<Scan<Box<dyn Scannable>>, ()> {
 fn vec_to_arr<T, const N: usize>(v: Vec<T>) -> [T; N] {
     v.try_into()
         .unwrap_or_else(|v: Vec<T>| panic!("Expected a Vec of length {} but it was {}", N, v.len()))
+}
+
+fn get_addrs(addr: usize, offset: usize, process: &Process, regions: &Vec<winnt::MEMORY_BASIC_INFORMATION>) -> Vec<usize> {
+    let mut addrs: Vec<usize> = Vec::new();
+    let mut search: String;
+    let borrowed_string: &str = "u64";
+    search = (addr-offset).to_string();
+    search.push_str(borrowed_string);
+    let scan = ret_scan(search.to_owned()).unwrap();
+    let last_scan = process.scan_regions(&regions, scan);
+
+    for r in last_scan.iter() {
+        for l in r.locations.iter() {
+            addrs.push(l);
+        }
+    }
+
+    return addrs;
+}
+
+fn get_health_addr(game_addr: usize, process: &Process) -> usize {
+    let inter_addr: usize = game_addr+720;
+
+    if let Ok(res_addr_vec) = process.read_memory(inter_addr, 8){
+        let health_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(40);
+        
+        println!(
+            "Health Address: {:#02X}",
+            health_addr
+        );
+    
+        return health_addr;
+    }
+    
+    return 0;
+}
+
+fn get_tower_count_addr(game_addr: usize, process: &Process) -> usize {
+    let inter_addr: usize = game_addr+128;
+    if let Ok(res_addr_vec) = process.read_memory(inter_addr, 8){
+        let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+        if let Ok(res_addr_vec) = process.read_memory(inter_addr+24, 8){
+            let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+            if let Ok(res_addr_vec) = process.read_memory(inter_addr+48, 8){
+                let tower_count_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(16);
+                println!(
+                    "Tower Count Address: {:#02X}",
+                    tower_count_addr
+                );
+            
+                return tower_count_addr;
+            }
+        }
+    }
+    return 0;
+}
+
+fn get_round_addr(game_addr: usize, process: &Process) -> usize {
+    let inter_addr: usize = game_addr+728;
+    if let Ok(res_addr_vec) = process.read_memory(inter_addr, 8){
+        let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+        if let Ok(res_addr_vec) = process.read_memory(inter_addr+144, 8){
+            let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
+            if let Ok(res_addr_vec) = process.read_memory(inter_addr+224, 8){
+                let round_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(40);
+                println!(
+                    "Round Address: {:#02X}",
+                    round_addr
+                );
+            
+                return round_addr;
+            }
+        }
+    }
+    return 0;
 }
 
 #[pyfunction]
@@ -253,6 +330,15 @@ fn initialize() -> Py<PyAny> {
 fn initialize_restart() -> Py<PyAny> {
     let mut addrs: HashMap<String,usize> = HashMap::new();
 
+    let path = Path::new("cache.txt");
+    
+    if(path.exists()){
+        fs::remove_file("cache.txt");
+        println!("Cache deleted successfully!");
+    } else {
+        println!("No Cache");
+    }
+
     let processes = memory::enum_proc()
         .unwrap()
         .into_iter()
@@ -291,7 +377,6 @@ fn initialize_restart() -> Py<PyAny> {
         .collect::<Vec<_>>();
 
     let mut cash_addrs: Vec<usize> = Vec::new();
-
     let scan = ret_scan("650.0f64".to_owned()).unwrap();
     let last_scan = process.scan_regions(&regions, scan);
 
@@ -300,7 +385,6 @@ fn initialize_restart() -> Py<PyAny> {
             cash_addrs.push(l);
         }
     }
-
     println!(
         "Cash Addresses: {}",
         cash_addrs.len()
@@ -308,192 +392,194 @@ fn initialize_restart() -> Py<PyAny> {
 
     let mut cash_addr: usize = 0;
 
-    let mut inter_addrs: Vec<usize> = Vec::new();
-    let mut search: String;
-    let borrowed_string: &str = "u64";
-
-    for addr in cash_addrs.iter(){
-        search = (addr-40).to_string();
-        search.push_str(borrowed_string);
-        let scan = ret_scan(search.to_owned()).unwrap();
-        let last_scan = process.scan_regions(&regions, scan);
-    
-        for r in last_scan.iter() {
-            for l in r.locations.iter() {
-                inter_addrs.push(l);
-            }
-        }
-
-        if inter_addrs.len() != 0 {
-            cash_addr = *addr;
-            break;
-        }
-    }
-
-    println!(
-        "Address of Money: {:#02X}",
-        cash_addr
-    );
-
-    addrs.insert(
-        "cash".to_string(), cash_addr
-    );
-
-    println!(
-        "Intermediate Addresses: {}",
-        inter_addrs.len()
-    );
-
-    let mut inter_addr: usize = 0;
+    let mut inter_addrs1: Vec<usize> = Vec::new();
     let mut inter_addrs2: Vec<usize> = Vec::new();
+    let mut inter_addrs3: Vec<usize> = Vec::new();
+    let mut inter_addrs4: Vec<usize> = Vec::new();
 
-    for addr in inter_addrs.iter() {
-        search = (addr-16).to_string();
-        search.push_str(borrowed_string);
-        let scan = ret_scan(search.to_owned()).unwrap();
-        let last_scan = process.scan_regions(&regions, scan);
-        // let potential_addr = last_scan
-        //     .iter()
-        //     .flat_map(|r| r.locations.iter())
-        //     .next();
-        for r in last_scan.iter() {
-            for l in r.locations.iter() {
-                inter_addrs2.push(l);
+
+    for addr1 in cash_addrs.iter(){
+        println!(
+            "Potential Address of Money: {:#02X}",
+            addr1
+        );
+        inter_addrs1.clear();
+        let mut inter_addr: usize = 0;
+        inter_addrs1 = get_addrs(*addr1, 40, &process, &regions);
+        
+        if inter_addrs1.len() == 0 {
+            println!(
+                "Wrong Address - Trying Again"
+            );
+            continue;}
+        cash_addr = *addr1;
+        
+
+        println!(
+            "Intermediate Addresses: {}",
+            inter_addrs1.len()
+        );
+
+        inter_addrs2.clear();
+
+        for addr2 in inter_addrs1.iter() {
+            println!(
+                "Handling Address: {:#02X}",
+                *addr2
+            );
+            inter_addrs2 = get_addrs(*addr2, 16, &process, &regions);
+            if inter_addrs2.len() == 0 {
+                println!(
+                    "Wrong Address - Trying Again"
+                );
+                continue;
+           }
+
+            println!(
+                "Intermediate Addresses: {}",
+                inter_addrs2.len()
+            );
+
+            inter_addrs3.clear();
+
+            for addr3 in inter_addrs2.iter(){
+                println!(
+                    "Handling Address: {:#02X}",
+                    *addr3
+                );
+                inter_addrs3 = get_addrs(*addr3, 48, &process, &regions);
+                if inter_addrs3.len() == 0 {
+                    println!(
+                        "Wrong Address - Trying Again"
+                    );
+                    continue;
+                }
+
+                println!(
+                    "Intermediate Addresses: {}",
+                    inter_addrs3.len()
+                );
+
+                inter_addrs4.clear();
+
+                for addr4 in inter_addrs3.iter(){
+                    println!(
+                        "Handling Address: {:#02X}",
+                        *addr4
+                    );
+                    inter_addrs4 = get_addrs(*addr4, 24, &process, &regions);
+                    if inter_addrs4.len() == 0 {
+                        println!(
+                            "Wrong Address - Trying Again"
+                        );
+                        continue;
+                    }
+
+                    println!(
+                        "Intermediate Addresses: {}",
+                        inter_addrs4.len()
+                    );
+
+                    for potential_addr in inter_addrs4.iter(){
+                        // Potential game_addr + 696
+                        inter_addr = *potential_addr;
+                        println!(
+                            "Intermediate Address: {:#02X}",
+                            inter_addr
+                        );
+
+                        let game_addr: usize = inter_addr-696;
+                        println!(
+                            "Possible Game Address: {:#02X} - Confirming Now",
+                            game_addr
+                        );
+
+                        // Numbers are decimal
+                        // health: game_addr+720 -> +40 (double)
+                        // towercount: game_addr+128-> +24 -> +48 -> +16 (int32)
+                        // round-1: game_addr+728-> +144 -> +224 -> +40 (double)
+
+                        let health_addr = get_health_addr(game_addr, &process);
+                        let round_addr = get_round_addr(game_addr, &process);
+                        let tower_count_addr = get_tower_count_addr(game_addr, &process);
+
+                        if(health_addr == 0 || round_addr == 0 || tower_count_addr == 0){
+                            println!(
+                                "Incorrect Game Address - Trying Again"
+                            );
+                            continue;
+                        }
+
+                        let mut health_value = -1.0;
+                        let mut round_value = -1.0;
+                        let mut tower_count_value = -1.0;
+
+                        if let Ok(res_addr_vec) = process.read_memory(health_addr, 8){
+                            health_value = f64::from_le_bytes(vec_to_arr(res_addr_vec));
+                        }
+                        
+
+                        if let Ok(res_addr_vec) = process.read_memory(round_addr, 8){
+                            round_value = f64::from_le_bytes(vec_to_arr(res_addr_vec));
+                        }
+                       
+
+                        if let Ok(res_addr_vec) = process.read_memory(tower_count_addr, 4){
+                            tower_count_value = i32::from_le_bytes(vec_to_arr(res_addr_vec)) as f64;
+                        }
+                       
+
+                        if health_value != 200.0 || round_value != 0.0 || tower_count_value != 0.0 {
+                            println!(
+                                "Incorrect Game Address - Trying Again"
+                            );
+                            continue;
+                        }
+
+                        addrs.insert(
+                            "cash".to_string(), cash_addr
+                        );
+
+                        addrs.insert(
+                            "health".to_string(), health_addr
+                        );
+                    
+                        addrs.insert(
+                            "tower_count".to_string(), tower_count_addr
+                        );
+                    
+                        addrs.insert(
+                            "round".to_string(), round_addr
+                        );
+
+                        let mut file = File::create("cache.txt").unwrap();
+
+                        for (key, value) in addrs.iter() {
+                            let v = vec![key.to_string(), " ".to_string(), value.to_string()];
+                            let line = v.concat();
+                            writeln!(file, "{}", line);
+                        }
+
+                        println!(
+                            "Confirmed Game Address: {:#02X} - Starting Countdown",
+                            game_addr
+                        );
+
+                        for i in 0..10 {
+                            println!("{}", 10-i);
+                            thread::sleep(time::Duration::from_secs(1));
+                        }
+
+                        return Python::with_gil(|py: Python| {
+                            addrs.to_object(py)
+                        });
+
+                    }
+                }
             }
         }
-        if inter_addrs2.len() != 0 {
-            // inter_addr = potential_addr.unwrap();
-            break;
-        }
     }
 
-    println!(
-        "Intermediate Addresses: {}",
-        inter_addrs2.len()
-    );
-
-    inter_addrs.clear();
-
-    for addr in inter_addrs2.iter(){
-        search = (addr-48).to_string();
-        search.push_str(borrowed_string);
-        let scan = ret_scan(search.to_owned()).unwrap();
-        let last_scan = process.scan_regions(&regions, scan);
-        // let potential_addr = last_scan
-        //     .iter()
-        //     .flat_map(|r| r.locations.iter())
-        //     .next();
-        for r in last_scan.iter() {
-            for l in r.locations.iter() {
-                inter_addrs.push(l);
-            }
-        }
-        if inter_addrs.len() != 0 {
-            // inter_addr = potential_addr.unwrap();
-            break;
-        }
-    }
-
-    println!(
-        "Intermediate Addresses: {}",
-        inter_addrs.len()
-    );
-
-    for addr in inter_addrs {
-        search = (addr-24).to_string();
-        search.push_str(borrowed_string);
-        let scan = ret_scan(search.to_owned()).unwrap();
-        let last_scan = process.scan_regions(&regions, scan);
-        let potential_addr = last_scan
-            .iter()
-            .flat_map(|r| r.locations.iter())
-            .next();
-        if potential_addr != None {
-            inter_addr = potential_addr.unwrap();
-            break;
-        } 
-    }
-
-    println!(
-        "Intermediate Address: {:#02X}",
-        inter_addr
-    );
-
-    for i in 0..10 {
-        println!("{}", 10-i);
-        thread::sleep(time::Duration::from_secs(1));
-    }
-
-    let game_addr: usize = inter_addr-696;
-
-    println!(
-        "Game Address: {:#02X}",
-        game_addr
-    );
-
-    // Numbers are decimal
-    // health: game_addr+720 -> +40 (double)
-    // towercount: game_addr+128-> +24 -> +48 -> +16 (int32)
-    // round-1: game_addr+728-> +144 -> +224 -> +40 (double?)
-
-    // FINDING HEALTH ADDRESS
-    let inter_addr: usize = game_addr+720;
-
-    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
-    let health_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-    println!(
-        "Health Address: {:#02X}",
-        health_addr+40
-    );
-
-    addrs.insert(
-        "health".to_string(), health_addr+40
-    );
-
-    // FINDING TOWERCOUNT ADDRESS
-    let inter_addr: usize = game_addr+128;
-    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
-    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-    let res_addr_vec = process.read_memory(inter_addr+24, 8).unwrap();
-    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-    let res_addr_vec = process.read_memory(inter_addr+48, 8).unwrap();
-    let tower_count_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-
-    println!(
-        "Tower Count Address: {:#02X}",
-        tower_count_addr+16
-    );
-
-    addrs.insert(
-        "tower_count".to_string(), tower_count_addr+16
-    );
-
-
-    // FINDING ROUND ADDRESS
-    let inter_addr: usize = game_addr+728;
-    let res_addr_vec = process.read_memory(inter_addr, 8).unwrap();
-    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-    let res_addr_vec = process.read_memory(inter_addr+144, 8).unwrap();
-    let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-    let res_addr_vec = process.read_memory(inter_addr+224, 8).unwrap();
-    let round_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
-
-    println!(
-        "Round Address: {:#02X}",
-        round_addr+40
-    );
-
-    addrs.insert(
-        "round".to_string(), round_addr+40
-    );
-
-    let mut file = File::create("cache.txt").unwrap();
-
-    for (key, value) in addrs.iter() {
-        let v = vec![key.to_string(), " ".to_string(), value.to_string()];
-        let line = v.concat();
-        writeln!(file, "{}", line);
-    }
 
     return Python::with_gil(|py: Python| {
         addrs.to_object(py)
