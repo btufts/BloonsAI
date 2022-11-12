@@ -327,7 +327,7 @@ fn initialize() -> Py<PyAny> {
 }
 
 #[pyfunction]
-fn initialize_restart() -> Py<PyAny> {
+fn initialize_restart(health_amount: f64) -> Py<PyAny> {
     let mut addrs: HashMap<String,usize> = HashMap::new();
 
     let path = Path::new("cache.txt");
@@ -411,9 +411,10 @@ fn initialize_restart() -> Py<PyAny> {
             println!(
                 "Wrong Address - Trying Again"
             );
-            continue;}
+            continue;
+        }
+
         cash_addr = *addr1;
-        
 
         println!(
             "Intermediate Addresses: {}",
@@ -505,7 +506,7 @@ fn initialize_restart() -> Py<PyAny> {
 
                         if(health_addr == 0 || round_addr == 0 || tower_count_addr == 0){
                             println!(
-                                "Incorrect Game Address - Trying Again"
+                                "Incorrect Game Address (Wrong Addresses) - Trying Again"
                             );
                             continue;
                         }
@@ -529,9 +530,9 @@ fn initialize_restart() -> Py<PyAny> {
                         }
                        
 
-                        if health_value != 200.0 || round_value != 0.0 || tower_count_value != 0.0 {
+                        if health_value != health_amount || round_value != 0.0 || tower_count_value != 0.0 {
                             println!(
-                                "Incorrect Game Address - Trying Again"
+                                "Incorrect Game Address (Wrong Values) - Trying Again"
                             );
                             continue;
                         }

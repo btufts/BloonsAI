@@ -3,6 +3,8 @@ from TowerData import tower_data
 import pyautogui as pg
 import BloonsAI
 import random
+import math
+import numpy as np
 
 # If the tower is placed at greater than or equal to 835 in the X direction, then the upgrade path will
 # appear on the left side of the screen. If X is less than 835, then the upgrade will be on the right
@@ -70,8 +72,11 @@ class Game:
         "lives": 200,
         "money": 650,
         "towers": 0,
-        "round": 0
+        "round": 0,
+        "max_round": 40
     }
+
+    diff = {}
 
     # Location of play next round button
     start_button = (1828, 993)
@@ -91,10 +96,19 @@ class Game:
     # List of actions
     action_list = []
 
-    def __init__(self, genetics):
+    # Place to Upgrade Ration
+    action_ratio = [.5, .5]
+
+    def __init__(self, genetics, difficulty, cache):
         self.genetics = genetics
-        self.mydict = BloonsAI.initialize_restart()
+        self.state["lives"] = difficulty["lives"]
+        self.state["max_round"] = difficulty["max_round"]
+        if cache:
+            self.mydict = BloonsAI.initialize()
+        else:
+            self.mydict = BloonsAI.initialize_restart(difficulty["lives"])
         self.grid = setup_grid()
+        self.diff = difficulty
 
     def update_state(self):
         self.state["money"] = BloonsAI.get_value(self.mydict["cash"], 8)
@@ -108,26 +122,43 @@ class Game:
     def save_genetics(self):
         pass
 
+    def update_ratio(self):
+        prob = round((math.erf(2*((self.round/100)-.5))+1)/4, 2)
+        self.action_ratio = [.5-prob, .5+prob]
+
+
     def run_game(self):
         self.perform_action(self.genetics[0])
+        self.start_round()
+        time.sleep(1)
         self.start_round()
         start_time = time.time()
         action = 1
         num_actions = len(self.genetics)
+        #and self.state["max_round"] > self.state["round"] !!! Not sure how round ending work? >? or >=? hm !!!
         while self.state["lives"] > 0:
-            if self.state["round"] > self.round:
-                self.start_round()
-                self.round += 1
             if action < num_actions:
                 next_action = self.genetics[action]
                 self.update_state()
-                if self.check_cash(next_action) < self.state["money"]:
-                    self.perform_action(next_action)
-                    action += 1
+                print(self.state["money"], " - ", next_action, " - ", self.check_cash(next_action), " - ", self.action_ratio[0],"/",self.action_ratio[1])
+                while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0:
+                    self.update_state()
+                    print(self.state["money"], " - ", next_action, " - ", self.check_cash(next_action), " - ", self.action_ratio[0],"/",self.action_ratio[1])
+                    if self.state["round"] > self.round:
+                        self.start_round()
+                        self.round += 1
+                        self.update_ratio()
+                    else:
+                        time.sleep(0.5)
+                print("Performing Action: ", (next_action))
+                self.perform_action(next_action)
+                action += 1
             else:
+                print("Generating Action")
                 next_act = self.generate_action()
                 self.genetics.append(next_act)
                 num_actions += 1
+            time.sleep(0.2)
         end_time = time.time()
         length = end_time - start_time
         self.save_genetics()
@@ -137,7 +168,8 @@ class Game:
         if len(self.towers) == 0:
             first_act = "place_tower"
         else:
-            first_act = random.sample(moves, 1)[0]
+            #first_act = random.sample(moves, 1)[0]
+            first_act = np.random.choice(moves, 1, p=self.action_ratio)
         if first_act == "place_tower":
             tower_to_place = random.sample(towers, 1)[0]
             location_to_place = random.sample(self.grid, 1)[0]
@@ -208,13 +240,13 @@ class Game:
     
     def check_cash(self, action):
         if action[0] == "place_tower":
-            return self.tower_data[action[1]]["base"]
+            return self.tower_data[action[1]][self.diff["base"]]
         else:
             tower_upgrading = self.towers[action[2]]
             monkey_name = tower_upgrading.monkey_type
             path = action[1]
             cur_path_level = tower_upgrading.get_path_level(path)
-            return self.tower_data[monkey_name][path][cur_path_level+1]
+            return self.tower_data[monkey_name][self.diff[path]][cur_path_level+1]
 
 class Monkey:
     top = 0

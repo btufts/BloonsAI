@@ -2,6 +2,58 @@ import BTD6Game
 import pyautogui
 import random
 import time
+import sys
+
+if len(sys.argv) < 2:
+    print("Please pass in difficulty:")
+    print("E: Easy, M: Medium, H: Hard, C: Chimps")
+    print("Followed by Y or N to use cache")
+    exit()
+
+difficulty = {
+    "E": {
+        "lives": 200.0,
+        "max_round": 40,
+        "base": "easybase",
+        "bottom": "easybottom",
+        "middle": "easymiddle",
+        "top": "easytop"
+    },
+    "M":{
+        "lives": 150.0,
+        "max_round": 60,
+        "base": "mediumbase",
+        "bottom": "mediumbottom",
+        "middle": "mediummiddle",
+        "top": "mediumtop"
+    },
+    "H": {
+        "lives": 100.0,
+        "max_round": 80,
+        "base": "hardbase",
+        "bottom": "hardbottom",
+        "middle": "hardmiddle",
+        "top": "hardtop"
+    },
+    "C": {
+        "lives": 1.0,
+        "max_round": 100,
+        "base": "chimpsbase",
+        "bottom": "chimpsbottom",
+        "middle": "chimpsmiddle",
+        "top": "chimpstop"
+    },
+}
+
+if sys.argv[1] not in difficulty.keys():
+    print("Invalid Difficulty")
+    print("E: Easy, M: Medium, H: Hard, C: Chimps")
+    print("Followed by Y or N to use cache")
+
+cache = False
+
+if len(sys.argv) > 2 and sys.argv[2] == "Y":
+    cache = True
 
 time.sleep(5)
 
@@ -9,7 +61,7 @@ grid = []
 
 action = ["place_tower", "dart_monkey", (400, 500)]
 
-new_game = BTD6Game.Game([action])
+new_game = BTD6Game.Game([action], difficulty[sys.argv[1]], cache)
 
 round, time, genes = new_game.run_game()
 print("Round: " + str(round))
