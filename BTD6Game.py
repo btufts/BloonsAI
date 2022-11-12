@@ -99,6 +99,9 @@ class Game:
     # Place to Upgrade Ration
     action_ratio = [.5, .5]
 
+    # Maximum Money to spend
+    max_spend = 1000
+
     def __init__(self, genetics, difficulty, cache):
         self.genetics = genetics
         self.state["lives"] = difficulty["lives"]
@@ -126,6 +129,11 @@ class Game:
         prob = round((math.erf(2*((self.round/100)-.5))+1)/4, 2)
         self.action_ratio = [.5-prob, .5+prob]
 
+    def update_max_spend(self):
+        if self.round >= 50:
+            self.max_spend = 999999999
+        else:
+            self.max_spend = 1000*math.exp(self.round/15)+200
 
     def run_game(self):
         self.perform_action(self.genetics[0])
@@ -148,6 +156,7 @@ class Game:
                         self.start_round()
                         self.round += 1
                         self.update_ratio()
+                        self.update_max_spend()
                     else:
                         time.sleep(0.5)
                 print("Performing Action: ", (next_action))
@@ -178,23 +187,45 @@ class Game:
             act = [first_act, tower_to_place, location_to_place]
             return act
         else:
-            tower_to_upgrade = random.sample(self.towers, 1)[0]
-            index_of_tower = self.towers.index(tower_to_upgrade)
-            available = tower_to_upgrade.available
-            if len(available) == 0:
-                for i in range(len(self.towers)):
-                    tower_to_upgrade = self.towers[(index_of_tower+i)%len(self.towers)]
-                    available = tower_to_upgrade.available
-                    if len(available) > 0:
-                        break
-                if len(available) == 0:
-                    tower_to_place = random.sample(towers, 1)[0]
-                    location_to_place = random.sample(self.grid, 1)[0]
-                    act = ["place_tower", tower_to_place, location_to_place]
-                    return act
-            path_to_upgrade = random.sample(available, 1)[0]
-            act = [first_act, path_to_upgrade, self.towers.index(tower_to_upgrade)]
+            towers_to_upgrade = random.shuffle(self.towers.view())
+            for i in range(len(towers_to_upgrade)):
+                available = towers_to_upgrade[i].available.view()
+                while(len(available) > 0):
+                    paths_to_upgrade = random.shuffle(available.view())
+                    for j in range(len(paths_to_upgrade)):
+                        act = [first_act, paths_to_upgrade[j], self.towers.index(towers_to_upgrade[i])]
+                        if(self.check_cash(act) <= self.max_spend):
+                            return act
+            tower_to_place = random.sample(towers, 1)[0]
+            location_to_place = random.sample(self.grid, 1)[0]
+            act = ["place_tower", tower_to_place, location_to_place]
             return act
+
+
+
+            # tower_to_upgrade = random.sample(self.towers, 1)[0]
+            # index_of_tower = self.towers.index(tower_to_upgrade)
+            # available = tower_to_upgrade.available.view()
+            # if len(available) == 0:
+            #     for i in range(len(self.towers)):
+            #         tower_to_upgrade = self.towers[(index_of_tower+i)%len(self.towers)]
+            #         available = tower_to_upgrade.available.view()
+            #         while(len(available) > 0):
+            #             path_to_upgrade = random.sample(available, 1)[0]
+            #             available.remove(path_to_upgrade)
+            #             act = [first_act, path_to_upgrade, self.towers.index(tower_to_upgrade)]
+            #             if(self.check_cash(act) > self.max_spend):
+            #                 continue
+            #             return act
+                        
+            #     if len(available) == 0:
+            #         tower_to_place = random.sample(towers, 1)[0]
+            #         location_to_place = random.sample(self.grid, 1)[0]
+            #         act = ["place_tower", tower_to_place, location_to_place]
+            #         return act
+            # path_to_upgrade = random.sample(available, 1)[0]
+            # act = [first_act, path_to_upgrade, self.towers.index(tower_to_upgrade)]
+            # return act
 
 
     def perform_action(self, action):
