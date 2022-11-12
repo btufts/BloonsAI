@@ -12,3 +12,4 @@ Cargo.lock
 venv
 .venv
 cache.txt
+__pycache__

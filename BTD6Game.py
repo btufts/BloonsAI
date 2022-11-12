@@ -11,7 +11,7 @@ import numpy as np
 middle_division = 835
 
 moves = ["place_tower", "upgrade"]
-towers = ["dart_monkey", "bomb_shooter", "ninja_monkey"]
+towers = ["dart_monkey", "bomb_shooter", "ninja_monkey", "monkey_ace", "wizard_monkey", "sniper_monkey", "tack_shooter", "boomerang_monkey"]
 
 upgrade_paths = {
     "right_top": (1551, 516),
@@ -170,6 +170,8 @@ class Game:
         else:
             #first_act = random.sample(moves, 1)[0]
             first_act = np.random.choice(moves, 1, p=self.action_ratio)
+            print("Numpy thing: ", first_act)
+            first_act = first_act[0]
         if first_act == "place_tower":
             tower_to_place = random.sample(towers, 1)[0]
             location_to_place = random.sample(self.grid, 1)[0]

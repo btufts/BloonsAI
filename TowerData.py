@@ -150,8 +150,8 @@ tower_data = {
             "easybase": 300,
             "mediumbase": 350,
             "hardbase": 380,
-            "location": None,
-            "scroll": None,
+            "location": (1840, 646),
+            "scroll": False,
             "easytop": {
                 1: 295,
                 2: 1275,
@@ -199,8 +199,8 @@ tower_data = {
             "easybase": 320,
             "mediumbase": 375,
             "hardbase": 405,
-            "location": None,
-            "scroll": None,
+            "location": (1715, 497),
+            "scroll": True,
             "easytop": {
                 1: 125,
                 2: 380,
@@ -248,7 +248,7 @@ tower_data = {
             "easybase": 275,
             "mediumbase": 325,
             "hardbase": 350,
-            "location": None,
+            "location": (1697, 343),
             "scroll": None,
             "easytop": {
                 1: 170,
@@ -297,8 +297,8 @@ tower_data = {
             "easybase": 680,
             "mediumbase": 800,
             "hardbase": 865,
-            "location": None,
-            "scroll": None,
+            "location": (1712, 877),
+            "scroll": False,
             "easytop": {
                 1: 550,
                 2: 550,
@@ -346,8 +346,8 @@ tower_data = {
             "easybase": 240,
             "mediumbase": 280,
             "hardbase": 300,
-            "location": None,
-            "scroll": None,
+            "location": (1716, 495),
+            "scroll": False,
             "easytop": {
                 1: 125,
                 2: 255,
