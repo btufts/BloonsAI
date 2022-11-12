@@ -74,7 +74,7 @@ while True:
     best_games = []
     # Go through all current individuals and run game
     for gene in cur_genes:
-        new_game = Game(gene)
+        new_game = Game(gene, {"health": 200.0, "max_round": 40})
         round, length, game_genes = new_game.run_game()
         best_games.append([round, length, game_genes])
 
