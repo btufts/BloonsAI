@@ -13,6 +13,7 @@ if len(sys.argv) < 2:
 difficulty = {
     "E": {
         "lives": 200.0,
+        "start_round": 0,
         "max_round": 40,
         "base": "easybase",
         "bottom": "easybottom",
@@ -21,6 +22,7 @@ difficulty = {
     },
     "M":{
         "lives": 150.0,
+        "start_round": 0,
         "max_round": 60,
         "base": "mediumbase",
         "bottom": "mediumbottom",
@@ -29,6 +31,7 @@ difficulty = {
     },
     "H": {
         "lives": 100.0,
+        "start_round": 2,
         "max_round": 80,
         "base": "hardbase",
         "bottom": "hardbottom",
@@ -37,11 +40,12 @@ difficulty = {
     },
     "C": {
         "lives": 1.0,
+        "start_round": 2,
         "max_round": 100,
-        "base": "chimpsbase",
-        "bottom": "chimpsbottom",
-        "middle": "chimpsmiddle",
-        "top": "chimpstop"
+        "base": "hardbase",
+        "bottom": "hardbottom",
+        "middle": "hardmiddle",
+        "top": "hardtop"
     },
 }
 

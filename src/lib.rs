@@ -59,10 +59,10 @@ fn get_health_addr(game_addr: usize, process: &Process) -> usize {
     if let Ok(res_addr_vec) = process.read_memory(inter_addr, 8){
         let health_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(40);
         
-        println!(
-            "Health Address: {:#02X}",
-            health_addr
-        );
+        // println!(
+        //     "Health Address: {:#02X}",
+        //     health_addr
+        // );
     
         return health_addr;
     }
@@ -78,10 +78,10 @@ fn get_tower_count_addr(game_addr: usize, process: &Process) -> usize {
             let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
             if let Ok(res_addr_vec) = process.read_memory(inter_addr+48, 8){
                 let tower_count_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(16);
-                println!(
-                    "Tower Count Address: {:#02X}",
-                    tower_count_addr
-                );
+                // println!(
+                //     "Tower Count Address: {:#02X}",
+                //     tower_count_addr
+                // );
             
                 return tower_count_addr;
             }
@@ -98,10 +98,10 @@ fn get_round_addr(game_addr: usize, process: &Process) -> usize {
             let inter_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec));
             if let Ok(res_addr_vec) = process.read_memory(inter_addr+224, 8){
                 let round_addr: usize = usize::from_le_bytes(vec_to_arr(res_addr_vec)).wrapping_add(40);
-                println!(
-                    "Round Address: {:#02X}",
-                    round_addr
-                );
+                // println!(
+                //     "Round Address: {:#02X}",
+                //     round_addr
+                // );
             
                 return round_addr;
             }
@@ -327,16 +327,16 @@ fn initialize() -> Py<PyAny> {
 }
 
 #[pyfunction]
-fn initialize_restart(health_amount: f64) -> Py<PyAny> {
+fn initialize_restart(health_amount: f64, start_round: f64) -> Py<PyAny> {
     let mut addrs: HashMap<String,usize> = HashMap::new();
 
     let path = Path::new("cache.txt");
     
     if(path.exists()){
         fs::remove_file("cache.txt");
-        println!("Cache deleted successfully!");
+        //println!("Cache deleted successfully!");
     } else {
-        println!("No Cache");
+        //println!("No Cache");
     }
 
     let processes = memory::enum_proc()
@@ -360,10 +360,10 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
         }
     }
 
-    println!("Pid: {}", bloons_pid);
+    //println!("Pid: {}", bloons_pid);
 
     let process = Process::open(bloons_pid).unwrap();
-    println!("Opened process {:?}", process);
+    //println!("Opened process {:?}", process);
 
     let mask = winnt::PAGE_EXECUTE_READWRITE
         | winnt::PAGE_EXECUTE_WRITECOPY
@@ -385,10 +385,10 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
             cash_addrs.push(l);
         }
     }
-    println!(
-        "Cash Addresses: {}",
-        cash_addrs.len()
-    );
+    // println!(
+    //     "Cash Addresses: {}",
+    //     cash_addrs.len()
+    // );
 
     let mut cash_addr: usize = 0;
 
@@ -399,101 +399,101 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
 
 
     for addr1 in cash_addrs.iter(){
-        println!(
-            "Potential Address of Money: {:#02X}",
-            addr1
-        );
+        // println!(
+        //     "Potential Address of Money: {:#02X}",
+        //     addr1
+        // );
         inter_addrs1.clear();
         let mut inter_addr: usize = 0;
         inter_addrs1 = get_addrs(*addr1, 40, &process, &regions);
         
         if inter_addrs1.len() == 0 {
-            println!(
-                "Wrong Address - Trying Again"
-            );
+            // println!(
+            //     "Wrong Address - Trying Again"
+            // );
             continue;
         }
 
         cash_addr = *addr1;
 
-        println!(
-            "Intermediate Addresses: {}",
-            inter_addrs1.len()
-        );
+        // println!(
+        //     "Intermediate Addresses: {}",
+        //     inter_addrs1.len()
+        // );
 
         inter_addrs2.clear();
 
         for addr2 in inter_addrs1.iter() {
-            println!(
-                "Handling Address: {:#02X}",
-                *addr2
-            );
+            // println!(
+            //     "Handling Address: {:#02X}",
+            //     *addr2
+            // );
             inter_addrs2 = get_addrs(*addr2, 16, &process, &regions);
             if inter_addrs2.len() == 0 {
-                println!(
-                    "Wrong Address - Trying Again"
-                );
+                // println!(
+                //     "Wrong Address - Trying Again"
+                // );
                 continue;
            }
 
-            println!(
-                "Intermediate Addresses: {}",
-                inter_addrs2.len()
-            );
+            // println!(
+            //     "Intermediate Addresses: {}",
+            //     inter_addrs2.len()
+            // );
 
             inter_addrs3.clear();
 
             for addr3 in inter_addrs2.iter(){
-                println!(
-                    "Handling Address: {:#02X}",
-                    *addr3
-                );
+                // println!(
+                //     "Handling Address: {:#02X}",
+                //     *addr3
+                // );
                 inter_addrs3 = get_addrs(*addr3, 48, &process, &regions);
                 if inter_addrs3.len() == 0 {
-                    println!(
-                        "Wrong Address - Trying Again"
-                    );
+                    // println!(
+                    //     "Wrong Address - Trying Again"
+                    // );
                     continue;
                 }
 
-                println!(
-                    "Intermediate Addresses: {}",
-                    inter_addrs3.len()
-                );
+                // println!(
+                //     "Intermediate Addresses: {}",
+                //     inter_addrs3.len()
+                // );
 
                 inter_addrs4.clear();
 
                 for addr4 in inter_addrs3.iter(){
-                    println!(
-                        "Handling Address: {:#02X}",
-                        *addr4
-                    );
+                    // println!(
+                    //     "Handling Address: {:#02X}",
+                    //     *addr4
+                    // );
                     inter_addrs4 = get_addrs(*addr4, 24, &process, &regions);
                     if inter_addrs4.len() == 0 {
-                        println!(
-                            "Wrong Address - Trying Again"
-                        );
+                        // println!(
+                        //     "Wrong Address - Trying Again"
+                        // );
                         continue;
                     }
 
-                    println!(
-                        "Intermediate Addresses: {}",
-                        inter_addrs4.len()
-                    );
+                    // println!(
+                    //     "Intermediate Addresses: {}",
+                    //     inter_addrs4.len()
+                    // );
 
                     for potential_addr in inter_addrs4.iter(){
                         // Potential game_addr + 696
                         inter_addr = *potential_addr;
-                        println!(
-                            "Intermediate Address: {:#02X}",
-                            inter_addr
-                        );
+                        // println!(
+                        //     "Intermediate Address: {:#02X}",
+                        //     inter_addr
+                        // );
 
                         let game_addr: usize = inter_addr-696;
-                        println!(
-                            "Possible Game Address: {:#02X} - Confirming Now",
-                            game_addr
-                        );
+                        // println!(
+                        //     "Possible Game Address: {:#02X} - Confirming Now",
+                        //     game_addr
+                        // );
 
                         // Numbers are decimal
                         // health: game_addr+720 -> +40 (double)
@@ -505,9 +505,9 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
                         let tower_count_addr = get_tower_count_addr(game_addr, &process);
 
                         if(health_addr == 0 || round_addr == 0 || tower_count_addr == 0){
-                            println!(
-                                "Incorrect Game Address (Wrong Addresses) - Trying Again"
-                            );
+                            // println!(
+                            //     "Incorrect Game Address (Wrong Addresses) - Trying Again"
+                            // );
                             continue;
                         }
 
@@ -530,10 +530,10 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
                         }
                        
 
-                        if health_value != health_amount || round_value != 0.0 || tower_count_value != 0.0 {
-                            println!(
-                                "Incorrect Game Address (Wrong Values) - Trying Again"
-                            );
+                        if health_value != health_amount || round_value != start_round || tower_count_value != 0.0 {
+                            // println!(
+                            //     "Incorrect Game Address (Wrong Values) - Trying Again"
+                            // );
                             continue;
                         }
 
@@ -561,13 +561,13 @@ fn initialize_restart(health_amount: f64) -> Py<PyAny> {
                             writeln!(file, "{}", line);
                         }
 
-                        println!(
-                            "Confirmed Game Address: {:#02X} - Starting Countdown",
-                            game_addr
-                        );
+                        // println!(
+                        //     "Confirmed Game Address: {:#02X} - Starting Countdown",
+                        //     game_addr
+                        // );
 
                         for i in 0..10 {
-                            println!("{}", 10-i);
+                            //println!("{}", 10-i);
                             thread::sleep(time::Duration::from_secs(1));
                         }
 

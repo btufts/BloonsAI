@@ -11,7 +11,10 @@ import numpy as np
 middle_division = 835
 
 moves = ["place_tower", "upgrade"]
-towers = ["dart_monkey", "bomb_shooter", "ninja_monkey", "monkey_ace", "wizard_monkey", "sniper_monkey", "tack_shooter", "boomerang_monkey"]
+towers = ["dart_monkey", "bomb_shooter", "ninja_monkey", 
+        "monkey_ace", "wizard_monkey", "sniper_monkey", 
+        "tack_shooter", "boomerang_monkey", "ice_monkey",
+        "glue_gunner", "mortar_monkey"]
 
 upgrade_paths = {
     "right_top": (1551, 516),
@@ -68,50 +71,43 @@ def setup_grid():
     return grid
 
 class Game:
-    state = {
-        "lives": 200,
-        "money": 650,
-        "towers": 0,
-        "round": 0,
-        "max_round": 40
-    }
-
-    diff = {}
+    
+    #########################################################
+    ################ SHARED BY ALL INSTANCES ################
+    #########################################################
 
     # Location of play next round button
     start_button = (1828, 993)
-
     top_left_corner = (21, 13)
     bottom_right_corner = (1559, 954)
 
     # Data on cost and location of towers to put down
     tower_data = tower_data
 
-    # List of towers on screen
-    towers = []
-
-    # Round counter to know when to start next round
-    round = 0
-
-    # List of actions
-    action_list = []
-
-    # Place to Upgrade Ration
-    action_ratio = [.5, .5]
-
-    # Maximum Money to spend
-    max_spend = 1000
 
     def __init__(self, genetics, difficulty, cache):
         self.genetics = genetics
-        self.state["lives"] = difficulty["lives"]
-        self.state["max_round"] = difficulty["max_round"]
+        self.state = {
+            "lives": difficulty["lives"],
+            "money": 650,
+            "towers": 0,
+            "round": difficulty["start_round"],
+            "max_round": difficulty["max_round"]
+        }
+
+        self.grid = setup_grid()
+        self.diff = difficulty
+        self.towers = []
+        self.action_list = []
+        self.max_spend = 1000
+        self.action_ratio = [.4, .6]
+        self.round = 0
+
         if cache:
             self.mydict = BloonsAI.initialize()
         else:
-            self.mydict = BloonsAI.initialize_restart(difficulty["lives"])
-        self.grid = setup_grid()
-        self.diff = difficulty
+            self.mydict = BloonsAI.initialize_restart(difficulty["lives"], float(difficulty["start_round"]))
+        
 
     def update_state(self):
         self.state["money"] = BloonsAI.get_value(self.mydict["cash"], 8)
@@ -123,11 +119,13 @@ class Game:
         pg.click(self.start_button)
 
     def save_genetics(self):
-        pass
+        print("<================ GENETICS ================>")
+        print(self.action_list)
+        print("<============= END OF GENETICS =============>")
 
     def update_ratio(self):
-        prob = round((math.erf(2*((self.round/100)-.5))+1)/4, 2)
-        self.action_ratio = [.5-prob, .5+prob]
+        prob = round((math.erf(2*((self.round/100)-.5))+1)/5, 2)
+        self.action_ratio = [.4-prob, .6+prob]
 
     def update_max_spend(self):
         if self.round >= 50:
@@ -144,14 +142,25 @@ class Game:
         action = 1
         num_actions = len(self.genetics)
         #and self.state["max_round"] > self.state["round"] !!! Not sure how round ending work? >? or >=? hm !!!
-        while self.state["lives"] > 0:
+        while self.state["lives"] > 0 and self.state["round"] < self.state["max_round"]:
             if action < num_actions:
                 next_action = self.genetics[action]
                 self.update_state()
-                print(self.state["money"], " - ", next_action, " - ", self.check_cash(next_action), " - ", self.action_ratio[0],"/",self.action_ratio[1])
-                while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0:
+                print("<========== CURRENT TOWER LIST ==========>")
+                for tower in self.towers:
+                    print("Tower: ", tower)
+                print(self.state["money"], " - ", next_action, " - ", 
+                        self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
+                        self.action_ratio[1])
+                if next_action[0] == "upgrade":
+                        print("Tower to upgrade: ", self.towers[next_action[2]])
+                while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0 and self.state["round"] < self.state["max_round"]:
                     self.update_state()
-                    print(self.state["money"], " - ", next_action, " - ", self.check_cash(next_action), " - ", self.action_ratio[0],"/",self.action_ratio[1])
+                    print(self.state["money"], " - ", next_action, " - ", 
+                        self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
+                        self.action_ratio[1])
+                    if next_action[0] == "upgrade":
+                        print("Tower to upgrade: ", self.towers[next_action[2]])
                     if self.state["round"] > self.round:
                         self.start_round()
                         self.round += 1
@@ -160,8 +169,8 @@ class Game:
                     else:
                         time.sleep(0.5)
                 print("Performing Action: ", (next_action))
-                self.perform_action(next_action)
-                action += 1
+                if self.perform_action(next_action):
+                    action += 1
             else:
                 print("Generating Action")
                 next_act = self.generate_action()
@@ -178,59 +187,38 @@ class Game:
             first_act = "place_tower"
         else:
             #first_act = random.sample(moves, 1)[0]
-            first_act = np.random.choice(moves, 1, p=self.action_ratio)
-            print("Numpy thing: ", first_act)
-            first_act = first_act[0]
+            first_act = np.random.choice(moves, 1, p=self.action_ratio)[0]
         if first_act == "place_tower":
             tower_to_place = random.sample(towers, 1)[0]
             location_to_place = random.sample(self.grid, 1)[0]
             act = [first_act, tower_to_place, location_to_place]
             return act
         else:
-            towers_to_upgrade = random.shuffle(self.towers.view())
+            print("TOWER LIST: ", self.towers)
+            towers_to_upgrade = list(self.towers)
+            random.shuffle(towers_to_upgrade)
+            print("TOWER LIST AFTER SHUFFLE: ", self.towers)
             for i in range(len(towers_to_upgrade)):
-                available = towers_to_upgrade[i].available.view()
-                while(len(available) > 0):
-                    paths_to_upgrade = random.shuffle(available.view())
-                    for j in range(len(paths_to_upgrade)):
-                        act = [first_act, paths_to_upgrade[j], self.towers.index(towers_to_upgrade[i])]
-                        if(self.check_cash(act) <= self.max_spend):
-                            return act
+                available = list(towers_to_upgrade[i].available)
+                random.shuffle(available)                                        
+                for j in range(len(available)):
+                    act = [first_act, available[j], self.towers.index(towers_to_upgrade[i])]
+                    if(self.check_cash(act) <= self.max_spend):
+                        return act
             tower_to_place = random.sample(towers, 1)[0]
             location_to_place = random.sample(self.grid, 1)[0]
             act = ["place_tower", tower_to_place, location_to_place]
             return act
 
-
-
-            # tower_to_upgrade = random.sample(self.towers, 1)[0]
-            # index_of_tower = self.towers.index(tower_to_upgrade)
-            # available = tower_to_upgrade.available.view()
-            # if len(available) == 0:
-            #     for i in range(len(self.towers)):
-            #         tower_to_upgrade = self.towers[(index_of_tower+i)%len(self.towers)]
-            #         available = tower_to_upgrade.available.view()
-            #         while(len(available) > 0):
-            #             path_to_upgrade = random.sample(available, 1)[0]
-            #             available.remove(path_to_upgrade)
-            #             act = [first_act, path_to_upgrade, self.towers.index(tower_to_upgrade)]
-            #             if(self.check_cash(act) > self.max_spend):
-            #                 continue
-            #             return act
-                        
-            #     if len(available) == 0:
-            #         tower_to_place = random.sample(towers, 1)[0]
-            #         location_to_place = random.sample(self.grid, 1)[0]
-            #         act = ["place_tower", tower_to_place, location_to_place]
-            #         return act
-            # path_to_upgrade = random.sample(available, 1)[0]
-            # act = [first_act, path_to_upgrade, self.towers.index(tower_to_upgrade)]
-            # return act
-
-
     def perform_action(self, action):
         if action[0] == "place_tower":
-            loc = self.place_tower(action[1], action[2], 0)
+            status, loc = self.place_tower(action[1], action[2])
+            if not status:
+                # Failed to place monkey
+                x = random.randint(0, self.bottom_right_corner[0])
+                y = random.randint(0, self.bottom_right_corner[1])
+                action[2] = (x, y)
+                return False
             cur_monkey = Monkey(loc, action[1])
             self.towers.append(cur_monkey)
             act = ["place_tower", action[1], loc]
@@ -241,35 +229,32 @@ class Game:
             monkey_to_upgrade.update_rank(path)
             act = action
         self.action_list.append(act)
+        return True
 
-    
-    def place_tower(self, monkey, location, repeated):
+    def place_tower(self, monkey, location):
         self.update_state()
         time.sleep(0.1)
         num_towers = self.state["towers"]
-        place_tower(monkey, location)
-        time.sleep(0.25)
-        self.update_state()
-        if self.state["towers"] == num_towers + 1:
-            return location
-        else:
-            if repeated > 9:
-                x = random.randint(0, self.bottom_right_corner[0])
-                y = random.randint(0, self.bottom_right_corner[1])
-                return self.place_tower(monkey, (x, y), 0)
-            offset = random.randrange(-1, 1) * 20
-            new_X = location[0] + offset
-            new_Y = location[1] + offset
-            if new_X <= 0:
-                new_X += new_X + random.randrange(10, 100)
-            if new_X >= self.bottom_right_corner[0]:
-                new_X -= random.randrange(25, 200)
-            if new_Y <= 0:
-                new_Y += new_Y + random.randrange(10, 100)
-            if new_Y >= self.bottom_right_corner[1]:
-                new_Y -= random.randrange(25, 200)
-            new_loc = (new_X, new_Y)
-            return self.place_tower(monkey, new_loc, repeated+1)
+        for i in range(9):
+            place_tower(monkey, location)
+            time.sleep(0.5)
+            self.update_state()
+            if self.state["towers"] == num_towers+1:
+                return True, location
+            else:
+                offset = random.randrange(-1, 1) * 20
+                new_X = location[0] + offset
+                new_Y = location[1] + offset
+                if new_X <= 0:
+                    new_X += new_X + random.randrange(10, 100)
+                if new_X >= self.bottom_right_corner[0]:
+                    new_X -= random.randrange(25, 200)
+                if new_Y <= 0:
+                    new_Y += new_Y + random.randrange(10, 100)
+                if new_Y >= self.bottom_right_corner[1]:
+                    new_Y -= random.randrange(25, 200)
+                location = (new_X, new_Y)
+        return False, (0, 0)
     
     def check_cash(self, action):
         if action[0] == "place_tower":
@@ -370,4 +355,7 @@ class Monkey:
             return self.middle
         else:
             return self.bottom
+
+    def __str__(self):
+        return "% s: % s - % s/% s/% s" % (self.monkey_type, self.top, self.middle, self.bottom, self.location)
     

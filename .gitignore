@@ -13,3 +13,4 @@ venv
 .venv
 cache.txt
 __pycache__
+*.log.txt
