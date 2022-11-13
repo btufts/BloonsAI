@@ -1,3 +1,8 @@
+/*
+Credit: https://github.com/Lonami/memo/tree/master
+*/
+
+
 use crate::scan::{Region, Scan, Scannable};
 use winapi::um::winnt;
 use std::mem::{self, MaybeUninit};
