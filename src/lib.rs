@@ -1,7 +1,16 @@
+/*
+File Written by: https://github.com/btufts
+Using memory.rs and scan.rs from: https://github.com/Lonami/memo/tree/master
+
+First project I have written in rust, may contain unconventional or unsafe practices
+Fixed what I could as I learned along the way and will continue to do so
+*/
+
 mod memory;
 mod scan;
 
 use pyo3::prelude::*;
+use winapi::um::winnt::MEMORY_BASIC_INFORMATION;
 use std::collections::HashMap;
 use memory::Process;
 use scan::{Scan, Scannable};
@@ -12,7 +21,7 @@ use std::fs;
 use std::path::Path;
 use std::io::{BufRead, BufReader, Write};
 use std::{thread, time};
-use std::num::Wrapping;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -385,10 +394,10 @@ fn initialize_restart(health_amount: f64, start_round: f64) -> Py<PyAny> {
             cash_addrs.push(l);
         }
     }
-    // println!(
-    //     "Cash Addresses: {}",
-    //     cash_addrs.len()
-    // );
+    println!(
+        "Cash Addresses: {}",
+        cash_addrs.len()
+    );
 
     let mut cash_addr: usize = 0;
 
@@ -587,6 +596,279 @@ fn initialize_restart(health_amount: f64, start_round: f64) -> Py<PyAny> {
     });
 }
 
+fn threaded_search(addr: usize, offset: usize, bloons_pid: u32, regions: &Vec<winnt::MEMORY_BASIC_INFORMATION>) -> Vec<usize> {
+    let addrs = Arc::new(Mutex::new(Vec::new()));
+    let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+
+    let mut handles: Vec<_> = Vec::new();
+    for chunk in 0..chunks.len() {
+        let addrs = Arc::clone(&addrs);
+        let handle = thread::spawn(move || {
+            let process = Process::open(bloons_pid).unwrap();
+            let mask = winnt::PAGE_EXECUTE_READWRITE
+                | winnt::PAGE_EXECUTE_WRITECOPY
+                | winnt::PAGE_READWRITE
+                | winnt::PAGE_WRITECOPY;
+
+            let regions = process
+                .memory_regions()
+                .into_iter()
+                .filter(|p| (p.Protect & mask) != 0)
+                .collect::<Vec<_>>();
+
+            let mut search: String;
+            let borrowed_string: &str = "u64";
+            search = (addr-offset).to_string();
+            search.push_str(borrowed_string);
+            
+            let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+            let scan = ret_scan(search.to_owned()).unwrap();
+            let last_scan = process.scan_regions(&chunks[chunk], scan);
+
+            let mut addrs = addrs.lock().unwrap();
+            for r in last_scan.iter() {
+                for l in r.locations.iter() {
+                    addrs.push(l);
+                }
+            }
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap()
+    }
+
+    return Arc::try_unwrap(addrs).unwrap().into_inner().unwrap();  
+}
+
+#[pyfunction]
+fn initialize_threaded(health_amount: f64, start_round: f64, verbose: u8) -> Py<PyAny> {
+    let addrs: Arc<Mutex<HashMap<String, usize>>> = Arc::new(Mutex::new(HashMap::new()));
+
+    let processes = memory::enum_proc()
+        .unwrap()
+        .into_iter()
+        .flat_map(memory::Process::open)
+        .flat_map(|proc| match proc.name() {
+            Ok(name) => Ok(ProcessItem {
+                pid: proc.pid(),
+                name,
+            }),
+            Err(err) => Err(err),
+        })
+        .collect::<Vec<_>>();
+
+    let mut bloons_pid: u32 = 0;
+
+    for p in processes.into_iter() {
+        if p.name == "BloonsTD6.exe" {
+            bloons_pid = p.pid;
+        }
+    }
+
+    let process = Process::open(bloons_pid).unwrap();
+
+    let mask = winnt::PAGE_EXECUTE_READWRITE
+        | winnt::PAGE_EXECUTE_WRITECOPY
+        | winnt::PAGE_READWRITE
+        | winnt::PAGE_WRITECOPY;
+
+    let regions = process
+        .memory_regions()
+        .into_iter()
+        .filter(|p| (p.Protect & mask) != 0)
+        .collect::<Vec<_>>();
+    
+    let cash_addrs = Arc::new(Mutex::new(Vec::new()));
+
+    // regions: Vector of regions to explore
+    // cash_addrs: Vector to store addresses that point to 650.0f64
+
+    println!("Scanning {} memory regions", regions.len());
+    let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+
+    println!("Number of chunks: {}",
+        chunks.len()
+    );
+
+    let mut handles: Vec<_> = Vec::new();
+    for chunk in 0..chunks.len() {
+        let cash_addrs = Arc::clone(&cash_addrs);
+        let handle = thread::spawn(move || {
+            let process = Process::open(bloons_pid).unwrap();
+            let mask = winnt::PAGE_EXECUTE_READWRITE
+                | winnt::PAGE_EXECUTE_WRITECOPY
+                | winnt::PAGE_READWRITE
+                | winnt::PAGE_WRITECOPY;
+
+            let regions = process
+                .memory_regions()
+                .into_iter()
+                .filter(|p| (p.Protect & mask) != 0)
+                .collect::<Vec<_>>();
+            
+            let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+            // println!("Number of chunks: {}",
+            //     chunks.len()
+            // );
+            thread::sleep(time::Duration::from_secs(1));
+    
+            let scan = ret_scan("650.0f64".to_owned()).unwrap();
+            let last_scan = process.scan_regions(&chunks[chunk], scan);
+
+            let mut cash_addrs = cash_addrs.lock().unwrap();
+            for r in last_scan.iter() {
+                for l in r.locations.iter() {
+                    cash_addrs.push(l);
+                }
+            }
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap()
+    }
+
+    let mut cash_addrs = Arc::try_unwrap(cash_addrs).unwrap().into_inner().unwrap();
+
+    if verbose > 2 {
+        for loc in cash_addrs.iter() {
+            println!(
+                "Location: {:#02X}",
+                loc
+            );
+        }
+    }
+
+    let mut handles: Vec<_> = Vec::new();
+    for addr1 in cash_addrs.into_iter() {
+        let addrs = Arc::clone(&addrs);
+        let handle = thread::spawn(move || {
+
+            let process = Process::open(bloons_pid).unwrap();
+            let mask = winnt::PAGE_EXECUTE_READWRITE
+                | winnt::PAGE_EXECUTE_WRITECOPY
+                | winnt::PAGE_READWRITE
+                | winnt::PAGE_WRITECOPY;
+
+            let regions = process
+                .memory_regions()
+                .into_iter()
+                .filter(|p| (p.Protect & mask) != 0)
+                .collect::<Vec<_>>();
+
+            let mut inter_addrs1 = Vec::new();
+            let mut inter_addrs2 = Vec::new();
+            let mut inter_addrs3 = Vec::new();
+            let mut inter_addrs4 = Vec::new();
+
+            inter_addrs1 = threaded_search(addr1, 40, bloons_pid, &regions);
+
+            for addr2 in inter_addrs1.iter(){
+                inter_addrs2 = threaded_search(*addr2, 16, bloons_pid, &regions);
+
+                for addr3 in inter_addrs2.iter(){
+                    inter_addrs3 = threaded_search(*addr3, 48, bloons_pid, &regions);
+
+                    for addr4 in inter_addrs3.iter(){
+                        inter_addrs4 = threaded_search(*addr4, 24, bloons_pid, &regions);
+
+                        for potential_addr in inter_addrs4.iter(){
+                            // Potential game_addr + 696
+                            let inter_addr = *potential_addr;
+                            if verbose > 3 {
+                                println!(
+                                    "Intermediate Address: {:#02X}",
+                                    inter_addr
+                                );                                
+                            }
+
+                            let game_addr: usize = inter_addr-696;
+                            if verbose > 2 {
+                                println!(
+                                    "Possible Game Address: {:#02X} - Confirming Now",
+                                    game_addr
+                                );                                
+                            }
+    
+                            let health_addr = get_health_addr(game_addr, &process);
+                            let round_addr = get_round_addr(game_addr, &process);
+                            let tower_count_addr = get_tower_count_addr(game_addr, &process);
+    
+                            if health_addr == 0 || round_addr == 0 || tower_count_addr == 0 {
+                                if verbose > 2 {
+                                    println!(
+                                        "Incorrect Game Address (Wrong Addresses) - Trying Again"
+                                    );
+                                }
+                                continue;
+                            }
+    
+                            let mut health_value = -1.0;
+                            let mut round_value = -1.0;
+                            let mut tower_count_value = -1.0;
+    
+                            if let Ok(res_addr_vec) = process.read_memory(health_addr, 8){
+                                health_value = f64::from_le_bytes(vec_to_arr(res_addr_vec));
+                            }
+                            
+                            if let Ok(res_addr_vec) = process.read_memory(round_addr, 8){
+                                round_value = f64::from_le_bytes(vec_to_arr(res_addr_vec));
+                            }
+                           
+                            if let Ok(res_addr_vec) = process.read_memory(tower_count_addr, 4){
+                                tower_count_value = i32::from_le_bytes(vec_to_arr(res_addr_vec)) as f64;
+                            }
+                           
+                            if health_value != health_amount || round_value != start_round || tower_count_value != 0.0 {
+                                if verbose > 2{
+                                    println!(
+                                        "Incorrect Game Address (Wrong Values) - Trying Again"
+                                    );
+                                }
+                                
+                                continue;
+                            }
+
+                            let mut map: HashMap<String, usize> = HashMap::new();
+                            map.insert(
+                                "cash".to_string(), addr1
+                            );
+                            map.insert(
+                                "health".to_string(), health_addr
+                            );
+                            map.insert(
+                                "tower_count".to_string(), tower_count_addr
+                            );
+                            map.insert(
+                                "round".to_string(), round_addr
+                            );
+    
+                            let mut addrs = addrs.lock().unwrap();
+                            for (key, value) in map {
+                                *addrs.entry(key).or_default() = value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap()
+    }
+
+    let final_addrs = Arc::try_unwrap(addrs).unwrap().into_inner().unwrap();
+    
+    return Python::with_gil(|py: Python| {
+        final_addrs.to_object(py)
+    });
+}
+
 #[pyfunction]
 fn get_value(addr: usize, val: usize) -> PyResult<f64> {
     let processes = memory::enum_proc()
@@ -630,5 +912,6 @@ fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(initialize, m)?)?;
     m.add_function(wrap_pyfunction!(get_value, m)?)?;
     m.add_function(wrap_pyfunction!(initialize_restart, m)?)?;
+    m.add_function(wrap_pyfunction!(initialize_threaded, m)?)?;
     Ok(())
 }

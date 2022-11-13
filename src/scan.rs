@@ -1,3 +1,8 @@
+/*
+Credit: https://github.com/Lonami/memo/tree/master
+*/
+
+
 use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::fmt;
