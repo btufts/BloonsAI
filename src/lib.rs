@@ -621,14 +621,17 @@ fn threaded_search(addr: usize, offset: usize, bloons_pid: u32, regions: &Vec<wi
             search = (addr-offset).to_string();
             search.push_str(borrowed_string);
             
-            let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
-            let scan = ret_scan(search.to_owned()).unwrap();
-            let last_scan = process.scan_regions(&chunks[chunk], scan);
-
-            let mut addrs = addrs.lock().unwrap();
-            for r in last_scan.iter() {
-                for l in r.locations.iter() {
-                    addrs.push(l);
+            let curr_chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+            thread::sleep(time::Duration::from_secs(1));
+            if chunk < curr_chunks.len() {
+                let scan = ret_scan(search.to_owned()).unwrap();
+                let last_scan = process.scan_regions(&curr_chunks[chunk], scan);
+    
+                let mut addrs = addrs.lock().unwrap();
+                for r in last_scan.iter() {
+                    for l in r.locations.iter() {
+                        addrs.push(l);
+                    }
                 }
             }
         });
@@ -708,21 +711,24 @@ fn initialize_threaded(health_amount: f64, start_round: f64, verbose: u8) -> Py<
                 .filter(|p| (p.Protect & mask) != 0)
                 .collect::<Vec<_>>();
             
-            let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
+            let curr_chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
             // println!("Number of chunks: {}",
             //     chunks.len()
             // );
-            thread::sleep(time::Duration::from_secs(1));
-    
-            let scan = ret_scan("650.0f64".to_owned()).unwrap();
-            let last_scan = process.scan_regions(&chunks[chunk], scan);
 
-            let mut cash_addrs = cash_addrs.lock().unwrap();
-            for r in last_scan.iter() {
-                for l in r.locations.iter() {
-                    cash_addrs.push(l);
+            thread::sleep(time::Duration::from_secs(1));
+            if chunk < curr_chunks.len() {
+                let scan = ret_scan("650.0f64".to_owned()).unwrap();
+                let last_scan = process.scan_regions(&curr_chunks[chunk], scan);
+    
+                let mut cash_addrs = cash_addrs.lock().unwrap();
+                for r in last_scan.iter() {
+                    for l in r.locations.iter() {
+                        cash_addrs.push(l);
+                    }
                 }
             }
+            
         });
         handles.push(handle);
     }

@@ -106,7 +106,10 @@ class Game:
         if cache:
             self.mydict = BloonsAI.initialize()
         else:
-            self.mydict = BloonsAI.initialize_restart(difficulty["lives"], float(difficulty["start_round"]))
+            search_time = time.time()
+            self.mydict = BloonsAI.initialize_threaded(difficulty["lives"], float(difficulty["start_round"]), 0)
+            search_end_time = time.time()
+            print("Init Time: ", search_end_time-search_time)
         
 
     def update_state(self):
