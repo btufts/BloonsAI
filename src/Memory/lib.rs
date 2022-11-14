@@ -2,8 +2,21 @@
 File Written by: https://github.com/btufts
 Using memory.rs and scan.rs from: https://github.com/Lonami/memo/tree/master
 
-First project I have written in rust, may contain unconventional or unsafe practices
-Fixed what I could as I learned along the way and will continue to do so
+First project I have written in rust, may contain unconventional or unsafe practices.
+Fixed what I could as I learned along the way and will continue to do so as AI is
+improved.
+
+Builds a python library written in rust containing functions to access the memory
+of the Bloons TD6 game. 
+
+Contains 3 seperate instances for finding needed addresses. Kept them all for legacy
+reasons but initialize_threaded is the latest and most up to date.
+
+Contains 1 function to getting the value at a particular address in memory which is
+used by AI to get the current value of game variables.
+
+Also contains some helper functions that will get moved to seperate file when this
+library gets restructured.
 */
 
 mod memory;
@@ -22,12 +35,6 @@ use std::path::Path;
 use std::io::{BufRead, BufReader, Write};
 use std::{thread, time};
 use std::sync::{Arc, Mutex, MutexGuard};
-
-/// Formats the sum of two numbers as string.
-#[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
-}
 
 pub struct ProcessItem {
     pid: u32,
@@ -394,10 +401,10 @@ fn initialize_restart(health_amount: f64, start_round: f64) -> Py<PyAny> {
             cash_addrs.push(l);
         }
     }
-    println!(
-        "Cash Addresses: {}",
-        cash_addrs.len()
-    );
+    // println!(
+    //     "Cash Addresses: {}",
+    //     cash_addrs.len()
+    // );
 
     let mut cash_addr: usize = 0;
 
@@ -914,7 +921,6 @@ fn get_value(addr: usize, val: usize) -> PyResult<f64> {
 /// A Python module implemented in Rust.
 #[pymodule]
 fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     m.add_function(wrap_pyfunction!(initialize, m)?)?;
     m.add_function(wrap_pyfunction!(get_value, m)?)?;
     m.add_function(wrap_pyfunction!(initialize_restart, m)?)?;

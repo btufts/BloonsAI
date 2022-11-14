@@ -1,14 +1,16 @@
-import time
-import random
+# Entry file to train the AI
+
 import time
 import sys
 from BTD6Game import Game
 import pyautogui as pg
+import utils.util as util
 
 # Genetic setup
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
 # upgrade_tower = ["upgrade", path, monkey_to_upgrade]
 
+# Move this to util maybe?
 def load_genetics():
     """
     Use the stored csv to load in the most recent best genetics
@@ -16,42 +18,31 @@ def load_genetics():
     """
     return {}
 
-home = (559, 825)
-exit = (50, 1022)
-quit = (1147, 738)
-steam_play = (600, 648)
-start_game = (953, 988)
-play_game = (831, 934)
-monkey_meadow = (527, 250)
-meadow_easy = (621, 427)
-meadow_standard = (633, 592)
-restart_button = (819, 803)
-confirm_restart_button = (1136, 720)
 
 def full_restart_game():
-    pg.click(home)
+    pg.click(util.home)
     time.sleep(5)
     pg.click(exit)
     time.sleep(3)
     pg.click(quit)
     time.sleep(10)
-    pg.click(steam_play)
+    pg.click(util.steam_play)
     time.sleep(35)
-    pg.click(start_game)
+    pg.click(util.start_game)
     time.sleep(5)
-    pg.click(play_game)
+    pg.click(util.play_game)
     time.sleep(5)
-    pg.click(monkey_meadow)
+    pg.click(util.monkey_meadow)
     time.sleep(5)
-    pg.click(meadow_easy)
+    pg.click(util.meadow_easy)
     time.sleep(5)
-    pg.click(meadow_standard)
+    pg.click(util.meadow_standard)
     time.sleep(5)
 
 def restart_game():
-    pg.click(restart_button)
+    pg.click(util.restart_button)
     time.sleep(1)
-    pg.click(confirm_restart_button)
+    pg.click(util.confirm_restart_button)
 
 def create_grid():
     grid = []
@@ -173,8 +164,8 @@ def main():
                 if time_game > second_best_scores[1]:
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
-                
 
+            
 
         # Mutate that individual into 4 other types?
 

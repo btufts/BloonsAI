@@ -1,3 +1,5 @@
+# Dictionary to store all information about towers usable by the AI
+
 tower_data = {
         "dart_monkey": {
             "easybase": 170,
