@@ -1,0 +1,1 @@
+# File for handling a genetics class, could be good to have a wrapper around the genetics for scaling

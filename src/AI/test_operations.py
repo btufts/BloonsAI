@@ -1,4 +1,6 @@
-import BTD6Game
+# Test file to running single instances of the AI
+
+import AI.BTD6Game as BTD6Game
 import pyautogui
 import random
 import time
