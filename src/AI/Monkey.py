@@ -91,4 +91,4 @@ class Monkey:
             return self.bottom
 
     def __str__(self):
-        return "% s: % s - % s/% s/% s" % (self.monkey_type, self.top, self.middle, self.bottom, self.location)
+        return "% s: % s - % s/% s/% s" % (self.monkey_type, self.location, self.top, self.middle, self.bottom)

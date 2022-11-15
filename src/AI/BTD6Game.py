@@ -33,7 +33,10 @@ class Game:
 
         self.grid = util.setup_grid()
         self.diff = difficulty
-        self.towers = []
+        # (x,y): Monkey
+        self.towers = {}
+        # ["place_tower", "{tower}", (x,y)]
+        # ["upgrade", "{branch}", (x,y)]
         self.action_list = []
         self.max_spend = 1000
         self.action_ratio = [.4, .6]
@@ -102,10 +105,10 @@ class Game:
                     if next_action[0] == "upgrade":
                         print("Tower to upgrade: ", self.towers[next_action[2]])
                     if self.state["round"] > self.round:
-                        self.start_round()
                         self.round += 1
                         self.update_ratio()
                         self.update_max_spend()
+                        self.start_round()
                     else:
                         time.sleep(0.5)
                 print("Performing Action: ", (next_action))
@@ -126,7 +129,6 @@ class Game:
         if len(self.towers) == 0:
             first_act = "place_tower"
         else:
-            #first_act = random.sample(moves, 1)[0]
             first_act = np.random.choice(util.moves, 1, p=self.action_ratio)[0]
         if first_act == "place_tower":
             tower_to_place = random.sample(util.towers, 1)[0]
@@ -134,15 +136,16 @@ class Game:
             act = [first_act, tower_to_place, location_to_place]
             return act
         else:
-            print("TOWER LIST: ", self.towers)
-            towers_to_upgrade = list(self.towers)
+            print("TOWER LIST: ")
+            for key, value in self.towers.items():
+                print(key, ": ", value)
+            towers_to_upgrade = list(self.towers.keys())
             random.shuffle(towers_to_upgrade)
-            print("TOWER LIST AFTER SHUFFLE: ", self.towers)
             for i in range(len(towers_to_upgrade)):
-                available = list(towers_to_upgrade[i].available)
+                available = list(self.towers[towers_to_upgrade[i]].available)
                 random.shuffle(available)                                        
                 for j in range(len(available)):
-                    act = [first_act, available[j], self.towers.index(towers_to_upgrade[i])]
+                    act = [first_act, available[j], towers_to_upgrade[i]]
                     if(self.check_cash(act) <= self.max_spend):
                         return act
             tower_to_place = random.sample(util.towers, 1)[0]
@@ -160,7 +163,7 @@ class Game:
                 action[2] = (x, y)
                 return False
             cur_monkey = Monkey(loc, action[1])
-            self.towers.append(cur_monkey)
+            self.towers[loc] = cur_monkey
             act = ["place_tower", action[1], loc]
         else:
             monkey_to_upgrade = self.towers[action[2]]
@@ -175,7 +178,7 @@ class Game:
         self.update_state()
         time.sleep(0.1)
         num_towers = self.state["towers"]
-        for i in range(9):
+        for _ in range(9):
             util.place_tower(monkey, location)
             time.sleep(0.5)
             self.update_state()
