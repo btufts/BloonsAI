@@ -5,6 +5,7 @@ import sys
 from BTD6Game import Game
 import pyautogui as pg
 import utils.util as util
+import utils.file_processing as fp
 
 # Genetic setup
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
@@ -124,13 +125,16 @@ def main():
     ]
 
     if load:
-        cur_genes = load_genetics()
+        cur_genes = fp.read_genetics()
+        generation_num = fp.get_generation_num()
     else:
         cur_genes = base_genes
+        generation_num = 0
 
 
     while True:
         best_games = []
+        generation_num += 1
         # Go through all current individuals and run game
         for gene in cur_genes:
             print("<============Beginning New Game============>")
@@ -164,6 +168,8 @@ def main():
                 if time_game > second_best_scores[1]:
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
+        fp.save_genetics(first_best, second_best)
+        fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1])
 
             
 
