@@ -166,9 +166,18 @@ class Game:
             self.towers[loc] = cur_monkey
             act = ["place_tower", action[1], loc]
         else:
+            cash_before = self.state["money"]
             monkey_to_upgrade = self.towers[action[2]]
             path = action[1]
             util.upgrade_monkey(monkey_to_upgrade.location, path)
+            time.sleep(0.05)
+            self.update_state()
+            cash_after = self.state["money"]
+            while cash_after > cash_before and self.state["lives"] != 0:
+                util.upgrade_monkey(monkey_to_upgrade.location, path)
+                time.sleep(0.05)
+                self.update_state()
+                cash_after = self.state["money"]
             monkey_to_upgrade.update_rank(path)
             act = action
         self.action_list.append(act)
@@ -179,6 +188,8 @@ class Game:
         time.sleep(0.1)
         num_towers = self.state["towers"]
         for _ in range(9):
+            if self.state["lives"] == 0:
+                break
             util.place_tower(monkey, location)
             time.sleep(0.5)
             self.update_state()
