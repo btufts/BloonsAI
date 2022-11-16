@@ -1,14 +1,14 @@
 # Game class to play the game
 
 import time
-from utils.TowerData import tower_data
+from src.AI.utils.TowerData import tower_data
 import pyautogui as pg
 import BloonsAI
 import random
 import math
 import numpy as np
-import utils.util as util
-from Monkey import Monkey
+import src.AI.utils.util as util
+from src.AI.Monkey import Monkey
 
 class Game:
     
@@ -68,7 +68,7 @@ class Game:
 
     def update_ratio(self):
         prob = round((math.erf(2*((self.round/100)-.5))+1)/5, 2)
-        self.action_ratio = [.4-prob, .6+prob]
+        self.action_ratio = [round(.4-prob,2), round(.6+prob,2)]
 
     def update_max_spend(self):
         if self.round >= 50:

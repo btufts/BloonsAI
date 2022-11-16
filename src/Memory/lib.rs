@@ -695,12 +695,12 @@ fn initialize_threaded(health_amount: f64, start_round: f64, verbose: u8) -> Py<
     // regions: Vector of regions to explore
     // cash_addrs: Vector to store addresses that point to 650.0f64
 
-    println!("Scanning {} memory regions", regions.len());
+    // println!("Scanning {} memory regions", regions.len());
     let chunks: Vec<Vec<MEMORY_BASIC_INFORMATION>> = regions.chunks(5).map(|s| s.into()).collect();
 
-    println!("Number of chunks: {}",
-        chunks.len()
-    );
+    // println!("Number of chunks: {}",
+    //     chunks.len()
+    // );
 
     let mut handles: Vec<_> = Vec::new();
     for chunk in 0..chunks.len() {

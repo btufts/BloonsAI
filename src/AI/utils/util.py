@@ -1,7 +1,7 @@
 # Utility functions and variables
 
 import pyautogui as pg
-from utils.TowerData import tower_data
+from src.AI.utils.TowerData import tower_data
 import time
 
 # If the tower is placed at greater than or equal to 835 in the X direction, then the upgrade path will
