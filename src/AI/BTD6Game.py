@@ -21,7 +21,7 @@ class Game:
     top_left_corner = (21, 13)
     bottom_right_corner = (1559, 954)
 
-    def __init__(self, genetics, difficulty, cache):
+    def __init__(self, genetics, difficulty, cache, alpha):
         self.genetics = genetics
         self.state = {
             "lives": difficulty["lives"],
@@ -30,6 +30,7 @@ class Game:
             "round": difficulty["start_round"],
             "max_round": difficulty["max_round"]
         }
+        self.alpha = alpha
 
         self.grid = util.setup_grid()
         self.diff = difficulty
@@ -92,6 +93,21 @@ class Game:
                 print("<========== CURRENT TOWER LIST ==========>")
                 for tower in self.towers:
                     print("Tower: ", tower)
+                if next_action[0] == "upgrade":
+                    possible = self.verify_upgrade(next_action)
+                    print(possible)
+                    if not possible:
+                        print("Old action:", next_action)
+                        new_action = self.fix_upgrade(next_action)
+                        print("New action:", new_action)
+                        if not new_action:
+                            print(self.genetics)
+                            self.genetics.remove(next_action)
+                            num_actions -= 1
+                            print(self.genetics)
+                            continue
+                        else:
+                            next_action = new_action
                 print(self.state["money"], " - ", next_action, " - ", 
                         self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
                         self.action_ratio[1])
@@ -109,11 +125,33 @@ class Game:
                         self.update_ratio()
                         self.update_max_spend()
                         self.start_round()
+                        time.sleep(0.2)
                     else:
                         time.sleep(0.5)
                 print("Performing Action: ", (next_action))
                 if self.perform_action(next_action):
                     action += 1
+                    if action < num_actions:
+                        if self.genetics[action][0] == "upgrade":
+                            possible = self.verify_upgrade(self.genetics[action])
+                            if not possible:
+                                new_action = self.fix_upgrade(self.genetics[action])
+                                if not new_action:
+                                    print(self.genetics)
+                                    self.genetics.remove(self.genetics[action])
+                                    num_actions -= 1
+                                    print(self.genetics)
+                                else:
+                                    self.genetics[action] = new_action
+                        potential_next_act = self.genetics[action]
+                        rand_num = random.random()
+                        if rand_num <= self.alpha:
+                            print("MUTATION OCCURRED")
+                            print("OLD ACTION: " + str(potential_next_act))
+                            new_action = self.perform_mutation(potential_next_act)
+                            print("NEW ACTION: " + str(new_action))
+                            self.genetics[action] = new_action
+                    time.sleep(0.2)
             else:
                 print("Generating Action")
                 next_act = self.generate_action()
@@ -179,8 +217,10 @@ class Game:
         time.sleep(0.1)
         num_towers = self.state["towers"]
         for _ in range(9):
+            if self.state["lives"] == 0:
+                break
             util.place_tower(monkey, location)
-            time.sleep(0.5)
+            time.sleep(0.25)
             self.update_state()
             if self.state["towers"] == num_towers+1:
                 return True, location
@@ -209,3 +249,63 @@ class Game:
             cur_path_level = tower_upgrading.get_path_level(path)
             return tower_data[monkey_name][self.diff[path]][cur_path_level+1]
     
+    def perform_mutation(self, action):
+        if action[0] == "place_tower":
+            update = random.sample(util.place_tower_random, 1)[0]
+            if update == "tower":
+                action[1] = random.sample(util.towers, 1)[0]
+            elif update == "location":
+                action[2] = random.sample(self.grid, 1)[0]
+            else:
+                action[1] = random.sample(util.towers, 1)[0]
+                action[2] = random.sample(self.grid, 1)[0]
+            return action
+        else:
+            upgrade = random.sample(util.upgrade_tower_random, 1)[0]
+            if upgrade == "path":
+                tower = self.towers.get(action[2])
+                available_actions = tower.available
+                if action[1] in available_actions:
+                    available_actions.remove(action[1])
+                    action[1] = random.sample(available_actions, 1)[0]
+                elif len(available_actions) > 0:
+                    action[1] = random.sample(available_actions, 1)[0]
+            else:
+                if len(self.towers) > 1:
+                    possible_locs = list(self.towers.keys())
+                    if action[2] in possible_locs:
+                        possible_locs.remove(action[2])
+                    action[2] = random.sample(possible_locs, 1)[0]
+            return action
+    
+    def verify_upgrade(self, action):
+        if self.towers.get(action[2]):
+            tower = self.towers.get(action[2])
+            available_actions = tower.available
+            if action[1] in available_actions:
+                return True
+        return False
+    
+    def fix_upgrade(self, action):
+        if self.towers.get(action[2]) is not None:
+            tower = self.towers.get(action[2])
+            available_actions = tower.available
+            if len(available_actions) != 0:
+                action[1] = random.sample(available_actions, 1)[0]
+                return action
+        locations = list(self.towers.keys())
+        best_loc = {}
+        best_dist = []
+        for each in locations:
+            dist = math.dist(each, action[2])
+            best_loc[dist] = each
+            best_dist.append(dist)
+        best_dist.sort()
+        for each2 in best_dist:
+            tower_to_upgrade = self.towers.get(best_loc.get(each2))
+            action[2] = best_loc.get(each2)
+            available_actions = tower_to_upgrade.available
+            if len(available_actions) != 0:
+                action[1] = random.sample(available_actions, 1)[0]
+                return action
+        return False
