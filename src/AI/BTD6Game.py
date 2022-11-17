@@ -264,12 +264,21 @@ class Game:
             upgrade = random.sample(util.upgrade_tower_random, 1)[0]
             if upgrade == "path":
                 tower = self.towers.get(action[2])
-                available_actions = tower.available
-                if action[1] in available_actions:
+                available_actions = tower.available.copy()
+                print("CHANGING PATH MUTATION")
+                print(available_actions)
+                if action[1] in available_actions and len(available_actions) > 1:
                     available_actions.remove(action[1])
+                    print(available_actions)
                     action[1] = random.sample(available_actions, 1)[0]
                 elif len(available_actions) > 0:
                     action[1] = random.sample(available_actions, 1)[0]
+                else:
+                    if len(self.towers) > 1:
+                        possible_locs = list(self.towers.keys())
+                        if action[2] in possible_locs:
+                            possible_locs.remove(action[2])
+                        action[2] = random.sample(possible_locs, 1)[0]
             else:
                 if len(self.towers) > 1:
                     possible_locs = list(self.towers.keys())
