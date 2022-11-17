@@ -25,6 +25,9 @@ upgrade_paths = {
     "left_close": (397, 80)
 }
 
+place_tower_random = ["tower", "location", "both"]
+upgrade_tower_random = ["path", "location"]
+
 home = (559, 825)
 exit = (50, 1022)
 quit = (1147, 738)
