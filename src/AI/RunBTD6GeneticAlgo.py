@@ -113,9 +113,9 @@ def main():
     time.sleep(2)
 
     base_genes = [
-        ["place_tower", "ninja_monkey", (627, 503)],
-        ["place_tower", "bomb_shooter", (627, 503)],
-        ["place_tower", "dart_monkey", (627, 503)],
+        [["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
+        [["place_tower", "bomb_shooter", (627, 503)]],
+        [["place_tower", "dart_monkey", (627, 503)]],
         # ["place_tower", "ninja_monkey", (630, 402)],
         # ["place_tower", "bomb_shooter", (630, 402)],
         # ["place_tower", "dart_monkey", (630, 402)],
@@ -138,7 +138,7 @@ def main():
         # Go through all current individuals and run game
         for gene in cur_genes:
             print("<============Beginning New Game============>")
-            new_game = Game([gene], difficulty[sys.argv[1]], False)
+            new_game = Game(gene, difficulty[sys.argv[1]], False, 0.9)
             round, length, game_genes = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes])
