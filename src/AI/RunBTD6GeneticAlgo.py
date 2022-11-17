@@ -2,10 +2,10 @@
 
 import time
 import sys
-from BTD6Game import Game
+from .BTD6Game import Game
 import pyautogui as pg
-import utils.util as util
-import utils.file_processing as fp
+import src.AI.utils.util as util
+import src.AI.utils.file_processing as fp
 
 # Genetic setup
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
@@ -53,62 +53,69 @@ def create_grid():
             grid.append(pos)
     return grid
 
-def main():
+def train():
 
-    if len(sys.argv) < 2:
-        print("Please pass in difficulty:")
-        print("E: Easy, M: Medium, H: Hard, C: Chimps")
-        print("Followed by Y or N to use cache")
-        exit()
-
-    difficulty = {
-        "E": {
-            "lives": 200.0,
-            "start_round": 0,
-            "max_round": 40,
-            "base": "easybase",
-            "bottom": "easybottom",
-            "middle": "easymiddle",
-            "top": "easytop"
-        },
-        "M":{
-            "lives": 150.0,
-            "start_round": 0,
-            "max_round": 60,
-            "base": "mediumbase",
-            "bottom": "mediumbottom",
-            "middle": "mediummiddle",
-            "top": "mediumtop"
-        },
-        "H": {
-            "lives": 100.0,
-            "start_round": 2,
-            "max_round": 80,
-            "base": "hardbase",
-            "bottom": "hardbottom",
-            "middle": "hardmiddle",
-            "top": "hardtop"
-        },
-        "C": {
-            "lives": 1.0,
-            "start_round": 2,
-            "max_round": 100,
-            "base": "hardbase",
-            "bottom": "hardbottom",
-            "middle": "hardmiddle",
-            "top": "hardtop"
-        },
-    }
-
-    if sys.argv[1] not in difficulty.keys():
+    difficulty_selection = input("Please enter difficulty (E: Easy, M: Medium, H: Hard, C: Chimps): ")
+    while difficulty_selection not in ['E', 'M', 'H', 'C']:
         print("Invalid Difficulty")
         print("E: Easy, M: Medium, H: Hard, C: Chimps")
-        print("Followed by Y or N to load genetics")
+        difficulty_selection = input("Please enter difficulty (E: Easy, M: Medium, H: Hard, C: Chimps): ")
+        
+    preload = input("Load data from file? ")
+    while preload not in ['Y', 'N']:
+        print("Invalid Value")
+        print("Y for load, N for not load")
+        preload = input("Load data from file? ")
+    
+    difficulty = {}
+    match difficulty_selection:
+        case 'E':
+            difficulty = {
+                "lives": 200.0,
+                "start_round": 0,
+                "max_round": 40,
+                "base": "easybase",
+                "bottom": "easybottom",
+                "middle": "easymiddle",
+                "top": "easytop"
+            }
+        case 'M':
+            difficulty = {
+                "lives": 150.0,
+                "start_round": 0,
+                "max_round": 60,
+                "base": "mediumbase",
+                "bottom": "mediumbottom",
+                "middle": "mediummiddle",
+                "top": "mediumtop"
+            }
+        case 'H':
+            difficulty = {
+                "lives": 100.0,
+                "start_round": 2,
+                "max_round": 80,
+                "base": "hardbase",
+                "bottom": "hardbottom",
+                "middle": "hardmiddle",
+                "top": "hardtop"
+            }
+        case 'C':
+            difficulty = {
+                "lives": 1.0,
+                "start_round": 2,
+                "max_round": 100,
+                "base": "hardbase",
+                "bottom": "hardbottom",
+                "middle": "hardmiddle",
+                "top": "hardtop"
+            }
 
     load = False
-
-    if len(sys.argv) > 2 and sys.argv[2] == "Y":
-        load = True
+    match preload:
+        case 'Y':
+            load = True
+        case _:
+            load = False
 
     time.sleep(2)
 
@@ -133,18 +140,19 @@ def main():
 
 
     while True:
+
+        # create offspring here
+
         best_games = []
         generation_num += 1
         # Go through all current individuals and run game
         for gene in cur_genes:
             print("<============Beginning New Game============>")
-            new_game = Game(gene, difficulty[sys.argv[1]], False, 0.9)
+            new_game = Game(gene, difficulty, False, 0.9)
             round, length, game_genes = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes])
             restart_game()
-
-        exit()
 
         # Get the best individual
         first_best = None
@@ -171,13 +179,4 @@ def main():
         fp.save_genetics(first_best, second_best)
         fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1])
 
-            
-
-        # Mutate that individual into 4 other types?
-
-        # Reset cur_genes
-
-
-
-if __name__=="__main__":
-    main()
+        exit()
