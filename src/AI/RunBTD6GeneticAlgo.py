@@ -112,8 +112,8 @@ def main():
     time.sleep(2)
 
     base_genes = [
-        [["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
-        [["place_tower", "bomb_shooter", (627, 503)]],
+        #[["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
+        [["place_tower", "bomb_shooter", (627, 503)], ["place_tower", "dart_monkey", (300, 803)],['place_tower', 'boomerang_monkey', (745, 711)], ['upgrade', 'bottom', (627, 503)], ['upgrade', 'top', (1483, 516)], ['place_tower', 'tack_shooter', (1280, 828)], ['place_tower', 'bomb_shooter', (460, 728)], ['upgrade', 'top', (460, 728)], ['upgrade', 'top', (1483, 516)], ['upgrade', 'top', (1483, 516)], ['upgrade', 'top', (1280, 828)], ['place_tower', 'tack_shooter', (1257, 927)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (320, 790)], ["place_tower", "mortar_monkey", (850, 300)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)]],
         [["place_tower", "dart_monkey", (627, 503)]],
         # ["place_tower", "ninja_monkey", (630, 402)],
         # ["place_tower", "bomb_shooter", (630, 402)],
