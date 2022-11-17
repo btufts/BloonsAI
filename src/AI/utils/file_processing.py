@@ -3,9 +3,8 @@ import csv
 import os
 import sys
 
-genetics_file = os.path.join(sys.path[0], "utils/genetics.json")
-generation_info_file = os.path.join(sys.path[0], "utils/generation_info.csv")
-
+genetics_file = os.path.join(sys.path[0], "src", "AI", "utils", "genetics.json")
+generation_info_file = os.path.join(sys.path[0], "src", "AI", "utils", "generation_info.csv")
 
 
 # read_genetics and save_genetics:
@@ -20,6 +19,7 @@ def read_genetics():
     for gene in json_object:
         for action in gene:
             action[2] = (action[2][0], action[2][1])
+    print(json_object)
     return json_object
 
 

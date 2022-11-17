@@ -120,9 +120,9 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        ["place_tower", "ninja_monkey", (627, 503)],
-        ["place_tower", "bomb_shooter", (627, 503)],
-        ["place_tower", "dart_monkey", (627, 503)],
+        [["place_tower", "ninja_monkey", (627, 503)]],
+        [["place_tower", "bomb_shooter", (627, 503)]],
+        [["place_tower", "dart_monkey", (627, 503)]],
         # ["place_tower", "ninja_monkey", (630, 402)],
         # ["place_tower", "bomb_shooter", (630, 402)],
         # ["place_tower", "dart_monkey", (630, 402)],
@@ -140,12 +140,15 @@ def train():
 
 
     while True:
+
+        # create offspring here
+
         best_games = []
         generation_num += 1
         # Go through all current individuals and run game
         for gene in cur_genes:
             print("<============Beginning New Game============>")
-            new_game = Game([gene], difficulty[sys.argv[1]], False)
+            new_game = Game(gene, difficulty, False)
             round, length, game_genes = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes])
@@ -177,7 +180,3 @@ def train():
         fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1])
 
         exit()
-
-        # Mutate that individual into 4 other types?
-
-        # Reset cur_genes
