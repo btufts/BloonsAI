@@ -66,6 +66,18 @@ def train():
         print("Invalid Value")
         print("Y for load, N for not load")
         preload = input("Load data from file? ")
+
+    while True:
+        try:
+            learning_rate = float(input("What learning rate? "))
+        except ValueError:
+            print("Invalid float value")
+        else:
+            if(learning_rate >= 0 and learning_rate <= 1):
+                break
+            else:
+                print("Invalid Learning rate (0 <= a <= 1)")
+    
     
     difficulty = {}
     match difficulty_selection:
