@@ -918,6 +918,42 @@ fn get_value(addr: usize, val: usize) -> PyResult<f64> {
     Ok(value)
 }
 
+#[pyfunction]
+fn kill() -> PyResult<i32>{
+    let processes = memory::enum_proc()
+    .unwrap()
+    .into_iter()
+    .flat_map(memory::Process::open)
+    .flat_map(|proc| match proc.name() {
+        Ok(name) => Ok(ProcessItem {
+            pid: proc.pid(),
+            name,
+        }),
+        Err(err) => Err(err),
+    })
+    .collect::<Vec<_>>();
+
+    let mut bloons_pid: u32 = 0;
+
+    for p in processes.into_iter() {
+        if p.name == "BloonsTD6.exe" {
+            bloons_pid = p.pid;
+            break;
+        }
+    }
+
+    let status: i32 = unsafe{winapi::um::processthreadsapi::TerminateProcess(
+        winapi::um::processthreadsapi::OpenProcess(
+            winnt::PROCESS_TERMINATE,
+            0,
+            bloons_pid,
+        ),
+        80085
+    )};
+
+    Ok(status)
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -925,5 +961,6 @@ fn BloonsAI(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(get_value, m)?)?;
     m.add_function(wrap_pyfunction!(initialize_restart, m)?)?;
     m.add_function(wrap_pyfunction!(initialize_threaded, m)?)?;
+    m.add_function(wrap_pyfunction!(kill, m)?)?;
     Ok(())
 }

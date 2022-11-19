@@ -3,6 +3,7 @@
 import pyautogui as pg
 from src.AI.utils.TowerData import tower_data
 import time
+import BloonsAI
 
 # If the tower is placed at greater than or equal to 835 in the X direction, then the upgrade path will
 # appear on the left side of the screen. If X is less than 835, then the upgrade will be on the right
@@ -39,6 +40,22 @@ meadow_easy = (621, 427)
 meadow_standard = (633, 592)
 restart_button = (819, 803)
 confirm_restart_button = (1136, 720)
+
+def full_restart(difficulty_coords):
+    BloonsAI.kill()
+    time.sleep(3)
+    pg.click(371, 425)
+    time.sleep(20)
+    pg.click(957, 986)
+    time.sleep(10)
+    pg.click(838, 930)
+    time.sleep(3)
+    pg.click(541, 249)
+    time.sleep(3)
+    pg.click(1278, 397) #Difficulty Coords
+    time.sleep(3)
+    pg.click(629, 579) # Game Type coords
+    time.sleep(3)
 
 def scroll(down):
     if down:
