@@ -19,7 +19,7 @@ def read_genetics():
     for gene in json_object:
         for action in gene:
             action[2] = (action[2][0], action[2][1])
-    print(json_object)
+    #print(json_object)
     return json_object
 
 
@@ -32,19 +32,24 @@ def save_genetics(genetics1, genetics2):
 
 def create_gen_info_file():
     # Overwrites file with header
-    save_gen_info("generation_num", "game_round", "game_time", flag='w')
+    save_gen_info("generation_num", "game_round", "game_time", "game_round2", "game_time2", flag='w')
 
 
-def save_gen_info(generation_num, game_round, game_time, flag='a'):
+def save_gen_info(generation_num, game_round, game_time, game_round2, game_time2, flag='a'):
     with open(generation_info_file, flag, newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([generation_num, game_round, game_time])
+        writer.writerow([generation_num, game_round, game_time, game_round2, game_time2])
 
 
 def get_generation_num():
     with open(generation_info_file, 'r', newline='') as file:
         last_gen_num = int(file.readlines()[-1][0])
     return last_gen_num
+
+def get_best_scores():
+    with open(generation_info_file, 'r', newline='') as file:
+        last_line = file.readlines()[-1].split(',')
+    return float(last_line[1]), float(last_line[2]), float(last_line[3]), float(last_line[4])
 
 
 # create_gen_info_file()

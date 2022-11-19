@@ -6,6 +6,7 @@ from .BTD6Game import Game
 import pyautogui as pg
 import src.AI.utils.util as util
 import src.AI.utils.file_processing as fp
+import random
 
 # Genetic setup
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
@@ -77,6 +78,15 @@ def train():
                 break
             else:
                 print("Invalid Learning rate (0 <= a <= 1)")
+
+    while True:
+        try:
+            gens = int(input("How many generations? "))
+        except ValueError:
+            print("Invalid number of generations")
+        else:
+            break
+            
     
     
     difficulty = {}
@@ -89,7 +99,8 @@ def train():
                 "base": "easybase",
                 "bottom": "easybottom",
                 "middle": "easymiddle",
-                "top": "easytop"
+                "top": "easytop",
+                "round": 0
             }
         case 'M':
             difficulty = {
@@ -99,7 +110,8 @@ def train():
                 "base": "mediumbase",
                 "bottom": "mediumbottom",
                 "middle": "mediummiddle",
-                "top": "mediumtop"
+                "top": "mediumtop",
+                "round": 0
             }
         case 'H':
             difficulty = {
@@ -109,7 +121,8 @@ def train():
                 "base": "hardbase",
                 "bottom": "hardbottom",
                 "middle": "hardmiddle",
-                "top": "hardtop"
+                "top": "hardtop",
+                "round": 2
             }
         case 'C':
             difficulty = {
@@ -119,7 +132,8 @@ def train():
                 "base": "hardbase",
                 "bottom": "hardbottom",
                 "middle": "hardmiddle",
-                "top": "hardtop"
+                "top": "hardtop",
+                "round": 6
             }
 
     load = False
@@ -132,9 +146,9 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        #[["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
-        [["place_tower", "bomb_shooter", (627, 503)], ["place_tower", "dart_monkey", (300, 803)],['place_tower', 'boomerang_monkey', (745, 711)], ['upgrade', 'bottom', (627, 503)], ['upgrade', 'top', (1483, 516)], ['place_tower', 'tack_shooter', (1280, 828)], ['place_tower', 'bomb_shooter', (460, 728)], ['upgrade', 'top', (460, 728)], ['upgrade', 'top', (1483, 516)], ['upgrade', 'top', (1483, 516)], ['upgrade', 'top', (1280, 828)], ['place_tower', 'tack_shooter', (1257, 927)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (320, 790)], ["place_tower", "mortar_monkey", (850, 300)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)]],
-        [["place_tower", "dart_monkey", (627, 503)]],
+        [["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "bottom", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
+        [["place_tower", "bomb_shooter", (627, 503)], ["place_tower", "dart_monkey", (300, 803)],['place_tower', 'boomerang_monkey', (745, 711)], ['upgrade', 'bottom', (627, 503)]],
+        [["place_tower", "dart_monkey", (627, 503)], ['upgrade', 'top', (1483, 516)], ['place_tower', 'tack_shooter', (1280, 828)], ['place_tower', 'bomb_shooter', (460, 728)], ['upgrade', 'top', (460, 728)]],
         # ["place_tower", "ninja_monkey", (630, 402)],
         # ["place_tower", "bomb_shooter", (630, 402)],
         # ["place_tower", "dart_monkey", (630, 402)],
@@ -151,26 +165,50 @@ def train():
         generation_num = 0
 
 
-    while True:
+    for _ in range(gens):
 
         # create offspring here
+        for _ in range(2):
+            split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
+            game1 = list(cur_genes[0])
+            game2 = list(cur_genes[1])
+            game1_half1 = game1[:split]
+            game1_half2 = game1[split:]
+            game2_half1 = game2[:split]
+            game2_half2 = game2[split:]
+            game1_half1.extend(game2_half2)
+            game2_half1.extend(game1_half2)
+            cur_genes.append(game1_half1)
+            cur_genes.append(game2_half2)
+
+        cur_genes.append(list(cur_genes[0])[:random.randint(1, len(cur_genes[0]))])
+        cur_genes.append(list(cur_genes[1])[:random.randint(1, len(cur_genes[1]))])
+
+        for each in cur_genes:
+            print(each)
+
+        best_scores = fp.get_best_scores()
+        first_best = cur_genes[0]
+        first_best_scores = [best_scores[0], best_scores[1]]
+        second_best = cur_genes[1]
+        second_best_scores = [best_scores[2], best_scores[3]]
 
         best_games = []
         generation_num += 1
         # Go through all current individuals and run game
         for gene in cur_genes:
             print("<============Beginning New Game============>")
-            new_game = Game(gene, difficulty, False, 0.9)
+            print(gene)
+            new_game = Game(gene, difficulty, False, learning_rate)
+            while(new_game is None):
+                util.full_restart(difficulty)
+                new_game = Game(gene, difficulty, False, learning_rate)
             round, length, game_genes = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes])
             restart_game()
 
         # Get the best individual
-        first_best = None
-        first_best_scores = [0, 0]
-        second_best = None
-        second_best_scores = [0, 0]
         for each in best_games:
             num_rounds = each[0]
             time_game = each[1]
@@ -189,6 +227,4 @@ def train():
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
         fp.save_genetics(first_best, second_best)
-        fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1])
-
-        exit()
+        fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1])
