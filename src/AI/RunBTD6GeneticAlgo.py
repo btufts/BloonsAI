@@ -99,7 +99,8 @@ def train():
                 "base": "easybase",
                 "bottom": "easybottom",
                 "middle": "easymiddle",
-                "top": "easytop"
+                "top": "easytop",
+                "round": 0
             }
         case 'M':
             difficulty = {
@@ -109,7 +110,8 @@ def train():
                 "base": "mediumbase",
                 "bottom": "mediumbottom",
                 "middle": "mediummiddle",
-                "top": "mediumtop"
+                "top": "mediumtop",
+                "round": 0
             }
         case 'H':
             difficulty = {
@@ -119,7 +121,8 @@ def train():
                 "base": "hardbase",
                 "bottom": "hardbottom",
                 "middle": "hardmiddle",
-                "top": "hardtop"
+                "top": "hardtop",
+                "round": 2
             }
         case 'C':
             difficulty = {
@@ -129,7 +132,8 @@ def train():
                 "base": "hardbase",
                 "bottom": "hardbottom",
                 "middle": "hardmiddle",
-                "top": "hardtop"
+                "top": "hardtop",
+                "round": 6
             }
 
     load = False
@@ -142,7 +146,7 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        #[["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "middle", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
+        [["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "bottom", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
         [["place_tower", "bomb_shooter", (627, 503)], ["place_tower", "dart_monkey", (300, 803)],['place_tower', 'boomerang_monkey', (745, 711)], ['upgrade', 'bottom', (627, 503)]],
         [["place_tower", "dart_monkey", (627, 503)], ['upgrade', 'top', (1483, 516)], ['place_tower', 'tack_shooter', (1280, 828)], ['place_tower', 'bomb_shooter', (460, 728)], ['upgrade', 'top', (460, 728)]],
         # ["place_tower", "ninja_monkey", (630, 402)],

@@ -22,7 +22,6 @@ class Game:
     bottom_right_corner = (1559, 954)
 
     def __new__(cls, genetics, difficulty, cache, alpha):
-        print("New")
         game = super(Game, cls).__new__(cls) 
         search_time = time.time()
         game.mydict = BloonsAI.initialize_threaded(difficulty["lives"], float(difficulty["start_round"]), 0)
@@ -33,7 +32,6 @@ class Game:
         return game
 
     def __init__(self, genetics, difficulty, cache, alpha):
-        print("Init")
         self.genetics = genetics
         self.state = {
             "lives": difficulty["lives"],
@@ -53,7 +51,7 @@ class Game:
         self.action_list = []
         self.max_spend = 1000
         self.action_ratio = [.25, .75]
-        self.round = 0
+        self.round = difficulty["round"]
 
         # if cache:
         #     self.mydict = BloonsAI.initialize()
@@ -109,16 +107,11 @@ class Game:
                     print("Tower: ", tower)
                 if next_action[0] == "upgrade":
                     possible = self.verify_upgrade(next_action)
-                    print(possible)
                     if not possible:
-                        print("Old action:", next_action)
                         new_action = self.fix_upgrade(next_action)
-                        print("New action:", new_action)
                         if not new_action:
-                            print(self.genetics)
                             self.genetics.remove(next_action)
                             num_actions -= 1
-                            print(self.genetics)
                             continue
                         else:
                             next_action = new_action
@@ -203,7 +196,7 @@ class Game:
             towers_to_upgrade = list(self.towers.keys())
             random.shuffle(towers_to_upgrade)
             for i in range(len(towers_to_upgrade)):
-                available = list(self.towers[towers_to_upgrade[i]].available)
+                available = list(self.towers[towers_to_upgrade[i]].available.copy())
                 random.shuffle(available)                                        
                 for j in range(len(available)):
                     act = [first_act, available[j], towers_to_upgrade[i]]
@@ -289,8 +282,6 @@ class Game:
             if upgrade == "path":
                 tower = self.towers.get(action[2])
                 available_actions = tower.available.copy()
-                print("CHANGING PATH MUTATION")
-                print(available_actions)
                 if action[1] in available_actions and len(available_actions) > 1:
                     available_actions.remove(action[1])
                 random.shuffle(available_actions)
@@ -320,7 +311,7 @@ class Game:
     def verify_upgrade(self, action):
         if self.towers.get(action[2]):
             tower = self.towers.get(action[2])
-            available_actions = tower.available
+            available_actions = tower.available.copy()
             if action[1] in available_actions and self.check_cash(action) <= self.max_spend:
                 return True
         return False
@@ -328,7 +319,7 @@ class Game:
     def fix_upgrade(self, action):
         if self.towers.get(action[2]) is not None:
             tower = self.towers.get(action[2])
-            available_actions = tower.available
+            available_actions = tower.available.copy()
             random.shuffle(available_actions)
             for act in available_actions:
                 action[1] = act
@@ -345,7 +336,7 @@ class Game:
         for each2 in best_dist:
             tower_to_upgrade = self.towers.get(best_loc.get(each2))
             action[2] = best_loc.get(each2)
-            available_actions = tower_to_upgrade.available
+            available_actions = tower_to_upgrade.available.copy()
             random.shuffle(available_actions)
             for act in available_actions:
                 action[1] = act

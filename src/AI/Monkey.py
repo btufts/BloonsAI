@@ -1,15 +1,15 @@
 # Class to store a monkey being used during a game
 
 class Monkey:
-    top = 0
-    middle = 0
-    bottom = 0
-
-    available = ["top", "middle", "bottom"]
 
     def __init__(self, location, monkey_type):
         self.location = location
         self.monkey_type = monkey_type
+        self.top = 0
+        self.middle = 0
+        self.bottom = 0
+
+        self.available = ["top", "middle", "bottom"]
     
     def update_rank(self, path):
         if path == "top":
