@@ -239,4 +239,4 @@ def train():
                     second_best_scores = [each[0], each[1]]
         fp.save_genetics(first_best, second_best)
         fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1], total_rounds/len(best_games), total_towers/len(best_games), total_upgrades/len(best_games), highest, lowest)
-        util.full_restart()
+        util.full_restart(difficulty)

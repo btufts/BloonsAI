@@ -71,6 +71,11 @@ class Game:
         self.state["round"] = BloonsAI.get_value(self.mydict["round"], 8)
 
     def start_round(self):
+        time.sleep(1)
+        pg.click(826, 946)
+        time.sleep(1)
+        pg.click(812, 13)
+        time.sleep(1)
         pg.click(self.start_button)
 
     def save_genetics(self):
