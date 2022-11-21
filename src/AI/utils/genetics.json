@@ -2,41 +2,25 @@
     [
         [
             "place_tower",
+            "sniper_monkey",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "place_tower",
             "dart_monkey",
             [
-                627,
-                503
+                740,
+                564
             ]
         ],
         [
             "place_tower",
-            "ninja_monkey",
+            "dart_monkey",
             [
-                1040,
-                148
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "place_tower",
-            "boomerang_monkey",
-            [
-                1391,
-                792
-            ]
-        ],
-        [
-            "place_tower",
-            "ninja_monkey",
-            [
-                80,
+                1520,
                 148
             ]
         ],
@@ -44,184 +28,56 @@
             "upgrade",
             "bottom",
             [
-                1040,
-                148
-            ]
-        ],
-        [
-            "place_tower",
-            "boomerang_monkey",
-            [
-                1161,
-                617
-            ]
-        ],
-        [
-            "place_tower",
-            "bomb_shooter",
-            [
-                459,
-                70
+                1360,
+                828
             ]
         ],
         [
             "upgrade",
             "bottom",
             [
-                459,
-                70
-            ]
-        ],
-        [
-            "place_tower",
-            "tack_shooter",
-            [
-                314,
-                948
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "place_tower",
-            "ninja_monkey",
-            [
-                500,
-                496
-            ]
-        ],
-        [
-            "place_tower",
-            "monkey_ace",
-            [
-                880,
-                964
-            ]
-        ],
-        [
-            "place_tower",
-            "bomb_shooter",
-            [
-                1360,
-                964
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                400,
+                1520,
                 148
             ]
         ],
         [
             "upgrade",
-            "top",
+            "bottom",
             [
                 1360,
-                964
-            ]
-        ],
-        [
-            "place_tower",
-            "ninja_monkey",
-            [
-                340,
-                564
+                828
             ]
         ],
         [
             "upgrade",
-            "top",
+            "middle",
             [
-                1200,
-                284
+                1360,
+                828
             ]
         ],
         [
             "upgrade",
-            "top",
+            "middle",
             [
-                340,
-                564
+                1360,
+                828
             ]
         ],
         [
             "place_tower",
             "boomerang_monkey",
             [
-                1040,
-                216
-            ]
-        ],
-        [
-            "place_tower",
-            "tack_shooter",
-            [
-                760,
-                312
+                1525,
+                876
             ]
         ],
         [
             "upgrade",
-            "top",
+            "middle",
             [
-                500,
-                496
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                340,
+                740,
                 564
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1040,
-                216
-            ]
-        ],
-        [
-            "place_tower",
-            "bomb_shooter",
-            [
-                400,
-                216
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1040,
-                216
-            ]
-        ],
-        [
-            "place_tower",
-            "bomb_shooter",
-            [
-                1440,
-                692
             ]
         ],
         [
@@ -229,6 +85,448 @@
             "top",
             [
                 1520,
+                148
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                1525,
+                876
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1525,
+                876
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1520,
+                148
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                1520,
+                148
+            ]
+        ],
+        [
+            "place_tower",
+            "bomb_shooter",
+            [
+                777,
+                170
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                777,
+                170
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                777,
+                170
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                777,
+                170
+            ]
+        ],
+        [
+            "place_tower",
+            "dart_monkey",
+            [
+                1200,
+                760
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                777,
+                170
+            ]
+        ],
+        [
+            "place_tower",
+            "bomb_shooter",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                1525,
+                876
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1040,
+                216
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                640,
+                80
+            ]
+        ]
+    ],
+    [
+        [
+            "place_tower",
+            "sniper_monkey",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "place_tower",
+            "dart_monkey",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "place_tower",
+            "bomb_shooter",
+            [
+                300,
+                400
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                300,
+                400
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                300,
+                400
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "place_tower",
+            "ninja_monkey",
+            [
+                1040,
+                216
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1040,
+                216
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                300,
+                400
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1360,
+                828
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "bottom",
+            [
+                1040,
                 216
             ]
         ],
@@ -236,72 +534,16 @@
             "place_tower",
             "ninja_monkey",
             [
-                1424,
-                817
+                724,
+                156
             ]
         ],
         [
             "upgrade",
-            "top",
+            "middle",
             [
-                760,
-                312
-            ]
-        ],
-        [
-            "place_tower",
-            "wizard_monkey",
-            [
-                1440,
-                896
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1360,
-                964
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                459,
-                70
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                400,
-                148
-            ]
-        ],
-        [
-            "place_tower",
-            "tack_shooter",
-            [
-                1120,
-                692
-            ]
-        ],
-        [
-            "place_tower",
-            "wizard_monkey",
-            [
-                480,
-                148
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1440,
-                896
+                300,
+                400
             ]
         ],
         [
@@ -309,214 +551,76 @@
             "top",
             [
                 1040,
-                148
-            ]
-        ]
-    ],
-    [
-        [
-            "place_tower",
-            "dart_monkey",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "upgrade",
-            "bottom",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "place_tower",
-            "sniper_monkey",
-            [
-                320,
-                80
-            ]
-        ],
-        [
-            "place_tower",
-            "ice_monkey",
-            [
-                1280,
-                80
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                320,
-                80
-            ]
-        ],
-        [
-            "upgrade",
-            "bottom",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1280,
-                80
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1280,
-                80
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1280,
-                80
-            ]
-        ],
-        [
-            "place_tower",
-            "dart_monkey",
-            [
-                620,
-                400
-            ]
-        ],
-        [
-            "place_tower",
-            "monkey_ace",
-            [
-                1145,
-                148
+                216
             ]
         ],
         [
             "upgrade",
             "middle",
             [
-                620,
+                300,
                 400
-            ]
-        ],
-        [
-            "place_tower",
-            "ice_monkey",
-            [
-                1510,
-                167
-            ]
-        ],
-        [
-            "upgrade",
-            "top",
-            [
-                1510,
-                167
             ]
         ],
         [
             "upgrade",
             "bottom",
             [
-                1510,
-                167
+                724,
+                156
             ]
         ],
         [
-            "place_tower",
-            "dart_monkey",
+            "upgrade",
+            "bottom",
             [
-                1537,
-                740
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
             ]
         ],
         [
             "place_tower",
             "bomb_shooter",
             [
-                495,
-                692
-            ]
-        ],
-        [
-            "upgrade",
-            "middle",
-            [
-                620,
-                400
-            ]
-        ],
-        [
-            "upgrade",
-            "bottom",
-            [
-                960,
-                148
-            ]
-        ],
-        [
-            "place_tower",
-            "bomb_shooter",
-            [
-                800,
-                148
-            ]
-        ],
-        [
-            "upgrade",
-            "bottom",
-            [
-                1280,
+                640,
                 80
             ]
         ],
         [
             "upgrade",
-            "bottom",
+            "middle",
             [
-                960,
-                148
+                1360,
+                828
             ]
         ],
         [
             "upgrade",
             "middle",
-            [
-                627,
-                503
-            ]
-        ],
-        [
-            "upgrade",
-            "bottom",
-            [
-                1510,
-                167
-            ]
-        ],
-        [
-            "place_tower",
-            "wizard_monkey",
             [
                 1360,
                 828
@@ -526,47 +630,95 @@
             "upgrade",
             "bottom",
             [
-                1360,
-                828
-            ]
-        ],
-        [
-            "place_tower",
-            "mortar_monkey",
-            [
-                747,
-                58
+                640,
+                80
             ]
         ],
         [
             "upgrade",
             "top",
             [
-                747,
-                58
+                640,
+                80
             ]
         ],
         [
             "upgrade",
             "top",
             [
-                747,
-                58
+                640,
+                80
             ]
         ],
         [
             "upgrade",
-            "middle",
+            "top",
             [
-                1510,
-                167
+                640,
+                80
             ]
         ],
         [
             "upgrade",
             "bottom",
             [
-                1280,
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
+                80
+            ]
+        ],
+        [
+            "upgrade",
+            "middle",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                740,
+                564
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                724,
+                156
+            ]
+        ],
+        [
+            "upgrade",
+            "top",
+            [
+                640,
                 80
             ]
         ]

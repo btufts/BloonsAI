@@ -1,12 +1,12 @@
 # Entry file to train the AI
 
 import time
-import sys
 from .BTD6Game import Game
 import pyautogui as pg
 import src.AI.utils.util as util
 import src.AI.utils.file_processing as fp
 import random
+import math
 
 # Genetic setup
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
@@ -40,11 +40,6 @@ def full_restart_game():
     time.sleep(5)
     pg.click(util.meadow_standard)
     time.sleep(5)
-
-def restart_game():
-    pg.click(util.restart_button)
-    time.sleep(1)
-    pg.click(util.confirm_restart_button)
 
 def create_grid():
     grid = []
@@ -157,15 +152,15 @@ def train():
         # ["place_tower", "dart_monkey", (400, 400)]
     ]
 
-    if load:
-        cur_genes = fp.read_genetics()
-        generation_num = fp.get_generation_num()
-    else:
-        cur_genes = base_genes
-        generation_num = 0
-
-
+    
     for _ in range(gens):
+
+        if load:
+            cur_genes = fp.read_genetics()
+            generation_num = fp.get_generation_num()
+        else:
+            cur_genes = base_genes
+            generation_num = 0
 
         # create offspring here
         for _ in range(2):
@@ -179,10 +174,10 @@ def train():
             game1_half1.extend(game2_half2)
             game2_half1.extend(game1_half2)
             cur_genes.append(game1_half1)
-            cur_genes.append(game2_half2)
+            cur_genes.append(game2_half1)
 
-        cur_genes.append(list(cur_genes[0])[:random.randint(1, len(cur_genes[0]))])
-        cur_genes.append(list(cur_genes[1])[:random.randint(1, len(cur_genes[1]))])
+        cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
+        cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
 
         for each in cur_genes:
             print(each)
@@ -196,27 +191,43 @@ def train():
         best_games = []
         generation_num += 1
         # Go through all current individuals and run game
+        ind = 1
         for gene in cur_genes:
-            print("<============Beginning New Game============>")
+            print("<============Beginning Game ", ind,"============>")
             print(gene)
             new_game = Game(gene, difficulty, False, learning_rate)
             while(new_game is None):
                 util.full_restart(difficulty)
                 new_game = Game(gene, difficulty, False, learning_rate)
-            round, length, game_genes = new_game.run_game()
+            round, length, game_genes, towers, upgrades = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
-            best_games.append([round, length, game_genes])
-            restart_game()
+            best_games.append([round, length, game_genes, towers, upgrades])
+            util.restart_game()
+            ind+=1
 
         # Get the best individual
+        total_rounds = 0
+        total_towers = 0
+        total_upgrades = 0
+        highest = 0
+        lowest = 1000
         for each in best_games:
             num_rounds = each[0]
             time_game = each[1]
+            total_rounds += num_rounds
+            total_towers += each[3]
+            total_upgrades += each[4]
+            highest = max(highest, num_rounds)
+            lowest = min(lowest, num_rounds)
             if num_rounds > first_best_scores[0]:
+                second_best = first_best
+                second_best_scores = [first_best_scores[0], first_best_scores[1]]
                 first_best = each[2]
                 first_best_scores = [each[0], each[1]]
             elif num_rounds == first_best_scores[0]:
                 if time_game > first_best_scores[1]:
+                    second_best = first_best
+                    second_best_scores = [first_best_scores[0], first_best_scores[1]]
                     first_best = each[2]
                     first_best_scores = [each[0], each[1]]
             elif num_rounds > second_best_scores[0]:
@@ -227,4 +238,5 @@ def train():
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
         fp.save_genetics(first_best, second_best)
-        fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1])
+        fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1], total_rounds/len(best_games), total_towers/len(best_games), total_upgrades/len(best_games), highest, lowest)
+        util.full_restart()

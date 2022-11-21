@@ -56,6 +56,23 @@ def full_restart(difficulty_coords):
     time.sleep(3)
     pg.click(629, 579) # Game Type coords
     time.sleep(3)
+    pg.click(1130, 723) # Overwrite saved game
+    time.sleep(3)
+
+def start_freeplay():
+    time.sleep(2)
+    pg.click(959, 901) # Ok on win
+    time.sleep(2)
+    pg.click(1215, 838) # Click freeplay
+    time.sleep(2)
+    pg.click(953, 749) # Ok on directions to freeplay
+    time.sleep(2)
+
+def restart_game():
+    time.sleep(2)
+    pg.click(restart_button)
+    time.sleep(1)
+    pg.click(confirm_restart_button)
 
 def scroll(down):
     if down:

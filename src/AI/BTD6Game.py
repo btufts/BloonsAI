@@ -46,6 +46,7 @@ class Game:
         self.diff = difficulty
         # (x,y): Monkey
         self.towers = {}
+        self.upgrades = 0
         # ["place_tower", "{tower}", (x,y)]
         # ["upgrade", "{branch}", (x,y)]
         self.action_list = []
@@ -88,8 +89,11 @@ class Game:
             self.max_spend = 1000*math.exp(self.round/15)+200
 
     def run_game(self):
-        while(self.genetics[0][0] == "upgrade" or self.check_cash(self.genetics[0]) > self.state["money"]):
+        while((len(self.genetics) > 0 and self.genetics[0][0] == "upgrade") or (len(self.genetics) > 0 and self.check_cash(self.genetics[0]) > self.state["money"])):
             self.genetics.pop(0)
+        if(len(self.genetics) == 0):
+            first_action = self.generate_action()
+            self.genetics.append(first_action)
         self.perform_action(self.genetics[0])
         self.start_round()
         time.sleep(1)
@@ -97,8 +101,9 @@ class Game:
         start_time = time.time()
         action = 1
         num_actions = len(self.genetics)
-        #and self.state["max_round"] > self.state["round"] !!! Not sure how round ending work? >? or >=? hm !!!
-        while self.state["lives"] > 0 and self.state["round"] < self.state["max_round"]:
+        while self.state["lives"] > 0:
+            if self.state["round"] == self.state["max_round"]:
+                util.start_freeplay()
             if action < num_actions:
                 next_action = self.genetics[action]
                 self.update_state()
@@ -120,7 +125,9 @@ class Game:
                         self.action_ratio[1])
                 if next_action[0] == "upgrade":
                         print("Tower to upgrade: ", self.towers[next_action[2]])
-                while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0 and self.state["round"] < self.state["max_round"]:
+                while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0:
+                    if self.state["round"] == self.state["max_round"]:
+                        util.start_freeplay()
                     self.update_state()
                     print(self.state["money"], " - ", next_action, " - ", 
                         self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
@@ -146,18 +153,6 @@ class Game:
                         else:
                             self.genetics[action] = new_action
 
-                    # if action < num_actions:
-                    #     if self.genetics[action][0] == "upgrade":
-                    #         possible = self.verify_upgrade(self.genetics[action])
-                    #         if not possible:
-                    #             new_action = self.fix_upgrade(self.genetics[action])
-                    #             if not new_action:
-                    #                 print(self.genetics)
-                    #                 self.genetics.remove(self.genetics[action])
-                    #                 num_actions -= 1
-                    #                 print(self.genetics)
-                    #             else:
-                    #                 self.genetics[action] = new_action
                     if action < num_actions:
                         potential_next_act = self.genetics[action]
                         rand_num = random.random()
@@ -177,7 +172,7 @@ class Game:
         end_time = time.time()
         length = end_time - start_time
         self.save_genetics()
-        return self.state["round"], length, self.action_list
+        return self.state["round"], length, self.action_list, len(self.towers), self.upgrades
                 
     def generate_action(self):
         if len(self.towers) == 0:
@@ -220,6 +215,7 @@ class Game:
             self.towers[loc] = cur_monkey
             act = ["place_tower", action[1], loc]
         else:
+            self.upgrades += 1
             monkey_to_upgrade = self.towers[action[2]]
             path = action[1]
             util.upgrade_monkey(monkey_to_upgrade.location, path)
@@ -234,8 +230,10 @@ class Game:
         num_towers = self.state["towers"]
         for _ in range(9):
             # TODO: doesn't work
-            if self.state["lives"] == 0:
+            if self.state["lives"] <= 0:
                 break
+            elif self.state["round"] == self.state["max_round"]:
+                util.start_freeplay
             util.place_tower(monkey, location)
             time.sleep(0.25)
             self.update_state()

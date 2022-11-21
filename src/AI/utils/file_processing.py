@@ -35,15 +35,15 @@ def create_gen_info_file():
     save_gen_info("generation_num", "game_round", "game_time", "game_round2", "game_time2", flag='w')
 
 
-def save_gen_info(generation_num, game_round, game_time, game_round2, game_time2, flag='a'):
+def save_gen_info(generation_num, game_round, game_time, game_round2, game_time2, avg_round, avg_towers, avg_upgrades, highest, lowest, flag='a'):
     with open(generation_info_file, flag, newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([generation_num, game_round, game_time, game_round2, game_time2])
+        writer.writerow([generation_num, game_round, game_time, game_round2, game_time2, avg_round, avg_towers, avg_upgrades, highest, lowest])
 
 
 def get_generation_num():
     with open(generation_info_file, 'r', newline='') as file:
-        last_gen_num = int(file.readlines()[-1][0])
+        last_gen_num = int(file.readlines()[-1].split(',')[0])
     return last_gen_num
 
 def get_best_scores():
