@@ -50,6 +50,33 @@ def create_grid():
             grid.append(pos)
     return grid
 
+def get_grid_num(grid, loc):
+    shortest = math.dist(grid[0], loc)
+    shortest_index = 0
+    for i in range(1, len(grid)):
+        dist = math.dist(grid[i], loc)
+        if dist < shortest:
+            shortest = dist
+            shortest_index = i
+    return shortest_index
+
+def update_monkey_loc(avg_round, best_games):
+    # Will call file reading function to get monkey data
+    monkey_locations = {}
+    grid = util.setup_grid()
+    for game in best_games:
+        actions = game[2]
+        game_round = game[0]
+        for act in actions:
+            if act[0] == "upgrade":
+                continue
+            grid_num = get_grid_num(grid, act[2])
+            monkey_locations[act[1]] = monkey_locations[act[1]][grid_num] + (game_round - avg_round)
+            if monkey_locations[act[1]][grid_num] < 1: 
+                monkey_locations[act[1]][grid_num] = 1
+    # Call function to write monkey_locations back to file
+
+
 def train():
 
     difficulty_selection = input("Please enter difficulty (E: Easy, M: Medium, H: Hard, C: Chimps): ")
@@ -194,6 +221,7 @@ def train():
         generation_num += 1
         # Go through all current individuals and run game
         ind = 1
+        total_rounds = 0
         for gene in cur_genes:
             print("<============Beginning Game ", ind,"============>")
             print(gene)
@@ -202,13 +230,16 @@ def train():
                 util.full_restart(difficulty)
                 new_game = Game(gene, difficulty, False, learning_rate)
             round, length, game_genes, towers, upgrades = new_game.run_game()
+            total_rounds += round
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes, towers, upgrades])
             util.restart_game()
             ind+=1
 
+        avg_round = total_rounds/len(cur_genes)
+        update_monkey_loc(avg_round, best_games)
+        
         # Get the best individual
-        total_rounds = 0
         total_towers = 0
         total_upgrades = 0
         highest = 0
