@@ -20,6 +20,7 @@ class Game:
     start_button = (1828, 993)
     top_left_corner = (21, 13)
     bottom_right_corner = (1559, 954)
+    hero = (1710, 219)
 
     def __new__(cls, genetics, difficulty, cache, alpha):
         game = super(Game, cls).__new__(cls) 
@@ -51,8 +52,9 @@ class Game:
         # ["upgrade", "{branch}", (x,y)]
         self.action_list = []
         self.max_spend = 1000
-        self.action_ratio = [.25, .75]
+        self.action_ratio = [.35, .65]
         self.round = difficulty["round"]
+        self.round_timer = 0
 
         # if cache:
         #     self.mydict = BloonsAI.initialize()
@@ -71,11 +73,16 @@ class Game:
         self.state["round"] = BloonsAI.get_value(self.mydict["round"], 8)
 
     def start_round(self):
+        self.round_timer = time.time()
+        pg.click(self.start_button)
+
+    def retry_start_round(self):
         time.sleep(1)
         pg.click(826, 946)
         time.sleep(1)
         pg.click(812, 13)
         time.sleep(1)
+        self.round_timer = time.time()
         pg.click(self.start_button)
 
     def save_genetics(self):
@@ -85,7 +92,7 @@ class Game:
 
     def update_ratio(self):
         prob = round((math.erf(5*((self.round/100)-.2))+1)/8, 2)
-        self.action_ratio = [.25-prob, .75+prob]
+        self.action_ratio = [.35-prob, .65+prob]
 
     def update_max_spend(self):
         if self.round >= 50:
@@ -146,6 +153,8 @@ class Game:
                         self.start_round()
                         time.sleep(0.2)
                     else:
+                        if time.time() - self.round_timer >= 300:
+                            self.retry_start_round()
                         time.sleep(0.5)
                 print("Performing Action: ", (next_action))
                 if self.perform_action(next_action):
