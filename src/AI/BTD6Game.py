@@ -219,6 +219,20 @@ class Game:
             cur_monkey = Monkey(loc, action[1])
             self.towers[loc] = cur_monkey
             act = ["place_tower", action[1], loc]
+        elif action[0] == "place_hero":
+            loc = action[1]
+            # Possible to not place in base spot
+            if random.random() <= self.alpha:
+                x = random.randint(0, self.bottom_right_corner[0])
+                y = random.randint(0, self.bottom_right_corner[1])
+                loc = (x, y)
+            status, pos = self.place_tower("hero_monkey", loc)
+            if not status:
+                x = random.randint(0, self.bottom_right_corner[0])
+                y = random.randint(0, self.bottom_right_corner[1])
+                action[1] = (x, y)
+                return False
+            act = ["place_hero", pos]
         else:
             self.upgrades += 1
             monkey_to_upgrade = self.towers[action[2]]
@@ -262,6 +276,8 @@ class Game:
     def check_cash(self, action):
         if action[0] == "place_tower":
             return tower_data[action[1]][self.diff["base"]]
+        elif action[0] == "place_hero":
+            return 0
         else:
             tower_upgrading = self.towers[action[2]]
             monkey_name = tower_upgrading.monkey_type
