@@ -13,7 +13,8 @@ moves = ["place_tower", "upgrade"]
 towers = ["dart_monkey", "bomb_shooter", "ninja_monkey", 
         "monkey_ace", "wizard_monkey", "sniper_monkey", 
         "tack_shooter", "boomerang_monkey", "ice_monkey",
-        "glue_gunner", "mortar_monkey"]
+        "glue_gunner", "mortar_monkey", "druid", "alchemist",
+         "engineer_monkey", "monkey_village", "spike_factory"]
 
 upgrade_paths = {
     "right_top": (1551, 516),

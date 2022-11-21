@@ -9,6 +9,7 @@ import random
 import math
 
 # Genetic setup
+# place_hero = ["place_hero", (x, y)]
 # place_tower = ["place_tower", "dart_monkey", (205, 500)]
 # upgrade_tower = ["upgrade", path, monkey_to_upgrade]
 
@@ -141,9 +142,9 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        [["place_tower", "ninja_monkey", (627, 503)], ["upgrade", "bottom", (627, 503)], ["upgrade", "top", (627, 503)], ["upgrade", "bottom", (627, 503)], ["place_tower", "bomb_shooter", (300, 300)], ["upgrade", "middle", (800, 300)], ["place_tower", "dart_monkey", (800, 300)], ["upgrade", "top", (300, 300)]],
-        [["place_tower", "bomb_shooter", (627, 503)], ["place_tower", "dart_monkey", (300, 803)],['place_tower', 'boomerang_monkey', (745, 711)], ['upgrade', 'bottom', (627, 503)]],
-        [["place_tower", "dart_monkey", (627, 503)], ['upgrade', 'top', (1483, 516)], ['place_tower', 'tack_shooter', (1280, 828)], ['place_tower', 'bomb_shooter', (460, 728)], ['upgrade', 'top', (460, 728)]],
+        [["place_hero", (627, 503)]],
+        [["place_hero", (300, 600)]],
+        [["place_hero", (700, 303)]],
         # ["place_tower", "ninja_monkey", (630, 402)],
         # ["place_tower", "bomb_shooter", (630, 402)],
         # ["place_tower", "dart_monkey", (630, 402)],
@@ -163,21 +164,22 @@ def train():
             generation_num = 0
 
         # create offspring here
-        for _ in range(2):
-            split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
-            game1 = list(cur_genes[0])
-            game2 = list(cur_genes[1])
-            game1_half1 = game1[:split]
-            game1_half2 = game1[split:]
-            game2_half1 = game2[:split]
-            game2_half2 = game2[split:]
-            game1_half1.extend(game2_half2)
-            game2_half1.extend(game1_half2)
-            cur_genes.append(game1_half1)
-            cur_genes.append(game2_half1)
+        if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
+            for _ in range(2):
+                split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
+                game1 = list(cur_genes[0])
+                game2 = list(cur_genes[1])
+                game1_half1 = game1[:split]
+                game1_half2 = game1[split:]
+                game2_half1 = game2[:split]
+                game2_half2 = game2[split:]
+                game1_half1.extend(game2_half2)
+                game2_half1.extend(game1_half2)
+                cur_genes.append(game1_half1)
+                cur_genes.append(game2_half1)
 
-        cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
-        cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
+            cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
+            cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
 
         for each in cur_genes:
             print(each)
