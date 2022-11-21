@@ -20,6 +20,7 @@ class Game:
     start_button = (1828, 993)
     top_left_corner = (21, 13)
     bottom_right_corner = (1559, 954)
+    hero = (1710, 219)
 
     def __new__(cls, genetics, difficulty, cache, alpha):
         game = super(Game, cls).__new__(cls) 
@@ -51,7 +52,7 @@ class Game:
         # ["upgrade", "{branch}", (x,y)]
         self.action_list = []
         self.max_spend = 1000
-        self.action_ratio = [.25, .75]
+        self.action_ratio = [.35, .65]
         self.round = difficulty["round"]
 
         # if cache:
@@ -85,7 +86,7 @@ class Game:
 
     def update_ratio(self):
         prob = round((math.erf(5*((self.round/100)-.2))+1)/8, 2)
-        self.action_ratio = [.25-prob, .75+prob]
+        self.action_ratio = [.35-prob, .65+prob]
 
     def update_max_spend(self):
         if self.round >= 50:
