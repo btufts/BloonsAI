@@ -172,12 +172,6 @@ def train():
         [["place_hero", (627, 503)]],
         [["place_hero", (300, 600)]],
         [["place_hero", (700, 303)]],
-        # ["place_tower", "ninja_monkey", (630, 402)],
-        # ["place_tower", "bomb_shooter", (630, 402)],
-        # ["place_tower", "dart_monkey", (630, 402)],
-        # ["place_tower", "ninja_monkey", (900, 600)],
-        # ["place_tower", "bomb_shooter", (300, 300)],
-        # ["place_tower", "dart_monkey", (400, 400)]
     ]
 
     
@@ -192,7 +186,7 @@ def train():
 
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
-            for _ in range(2):
+            for _ in range(4):
                 split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
                 game1 = list(cur_genes[0])
                 game2 = list(cur_genes[1])
@@ -207,6 +201,10 @@ def train():
 
             cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
             cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
+            cur_genes.append(list(cur_genes[0])[:random.randint(1, math.ceil(len(cur_genes[0])/2))])
+            cur_genes.append(list(cur_genes[1])[:random.randint(1, math.ceil(len(cur_genes[1])/2))])
+            cur_genes.append(["place_hero", (627, 503)])
+            cur_genes.append(["place_hero", (700, 303)])
 
         for each in cur_genes:
             print(each)
