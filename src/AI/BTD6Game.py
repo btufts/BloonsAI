@@ -33,7 +33,7 @@ class Game:
         return game
 
     def __init__(self, genetics, difficulty, cache, alpha):
-        self.genetics = genetics
+        self.genetics = genetics.copy()
         self.state = {
             "lives": difficulty["lives"],
             "money": 650,
