@@ -22,7 +22,7 @@ class Game:
     bottom_right_corner = (1559, 954)
     hero = (1710, 219)
 
-    def __new__(cls, genetics, difficulty, cache, alpha):
+    def __new__(cls, genetics, difficulty, cache, alpha, grid_vals):
         game = super(Game, cls).__new__(cls) 
         search_time = time.time()
         game.mydict = BloonsAI.initialize_threaded(difficulty["lives"], float(difficulty["start_round"]), 0)
@@ -32,7 +32,7 @@ class Game:
             return None
         return game
 
-    def __init__(self, genetics, difficulty, cache, alpha):
+    def __init__(self, genetics, difficulty, cache, alpha, grid_vals):
         self.genetics = genetics.copy()
         self.state = {
             "lives": difficulty["lives"],
@@ -55,6 +55,7 @@ class Game:
         self.action_ratio = [.35, .65]
         self.round = difficulty["round"]
         self.round_timer = 0
+        self.grid_vals = grid_vals
 
         # if cache:
         #     self.mydict = BloonsAI.initialize()
@@ -195,7 +196,8 @@ class Game:
             first_act = np.random.choice(util.moves, 1, p=self.action_ratio)[0]
         if first_act == "place_tower":
             tower_to_place = random.sample(util.towers, 1)[0]
-            location_to_place = random.sample(self.grid, 1)[0]
+            # location_to_place = random.sample(self.grid, 1)[0]
+            location_to_place = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals[tower_to_place]))]
             act = [first_act, tower_to_place, location_to_place]
             return act
         else:
@@ -212,7 +214,7 @@ class Game:
                     if(self.check_cash(act) <= self.max_spend):
                         return act
             tower_to_place = random.sample(util.towers, 1)[0]
-            location_to_place = random.sample(self.grid, 1)[0]
+            location_to_place = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals[tower_to_place]))]
             act = ["place_tower", tower_to_place, location_to_place]
             return act
 
@@ -221,9 +223,8 @@ class Game:
             status, loc = self.place_tower(action[1], action[2])
             if not status:
                 # Failed to place monkey
-                x = random.randint(0, self.bottom_right_corner[0])
-                y = random.randint(0, self.bottom_right_corner[1])
-                action[2] = (x, y)
+                location_to_place = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals[action[1]]))]
+                action[2] = location_to_place
                 return False
             cur_monkey = Monkey(loc, action[1])
             self.towers[loc] = cur_monkey
@@ -232,14 +233,10 @@ class Game:
             loc = action[1]
             # Possible to not place in base spot
             if random.random() <= self.alpha:
-                x = random.randint(0, self.bottom_right_corner[0])
-                y = random.randint(0, self.bottom_right_corner[1])
-                loc = (x, y)
+                loc = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals["hero_monkey"]))]
             status, pos = self.place_tower("hero_monkey", loc)
             if not status:
-                x = random.randint(0, self.bottom_right_corner[0])
-                y = random.randint(0, self.bottom_right_corner[1])
-                action[1] = (x, y)
+                action[1] = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals["hero_monkey"]))]
                 return False
             act = ["place_hero", pos]
         else:
@@ -300,10 +297,10 @@ class Game:
             if update == "tower":
                 action[1] = random.sample(util.towers, 1)[0]
             elif update == "location":
-                action[2] = random.sample(self.grid, 1)[0]
+                action[2] = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals[action[1]]))]
             else:
                 action[1] = random.sample(util.towers, 1)[0]
-                action[2] = random.sample(self.grid, 1)[0]
+                action[2] = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals[action[1]]))]
             return action
         else:
             upgrade = random.sample(util.upgrade_tower_random, 1)[0]
