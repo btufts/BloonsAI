@@ -5,7 +5,7 @@ import sys
 
 genetics_file = os.path.join(sys.path[0], "src", "AI", "utils", "genetics.json")
 generation_info_file = os.path.join(sys.path[0], "src", "AI", "utils", "generation_info.csv")
-
+grid_vals_file = os.path.join(sys.path[0], "src", "AI", "utils", "grid_vals.json")
 
 # read_genetics and save_genetics:
 # https://www.geeksforgeeks.org/reading-and-writing-json-to-a-file-in-python/
@@ -55,4 +55,11 @@ def get_best_scores():
 # create_gen_info_file()
 
 def read_grid_vals():
-    pass
+    with open(grid_vals_file, 'r') as openfile:
+        json_object = json.load(openfile)
+    return json_object
+
+def write_grid_vals(grid_vals):
+    json_object = json.dumps(grid_vals, indent=4)
+    with open(grid_vals_file, "w") as outfile:
+        outfile.write(json_object)

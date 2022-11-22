@@ -61,8 +61,7 @@ def get_grid_num(grid, loc):
     return shortest_index
 
 def update_monkey_loc(avg_round, best_games):
-    # Will call file reading function to get monkey data
-    monkey_locations = {}
+    monkey_locations = fp.read_grid_vals()
     grid = util.setup_grid()
     for game in best_games:
         actions = game[2]
@@ -74,7 +73,7 @@ def update_monkey_loc(avg_round, best_games):
             monkey_locations[act[1]] = monkey_locations[act[1]][grid_num] + (game_round - avg_round)
             if monkey_locations[act[1]][grid_num] < 1: 
                 monkey_locations[act[1]][grid_num] = 1
-    # Call function to write monkey_locations back to file
+    fp.write_grid_vals(monkey_locations)
 
 
 def train():
@@ -184,6 +183,7 @@ def train():
         else:
             cur_genes = base_genes
             generation_num = 0
+            grid_vals = util.instantiate_grid_vals()
 
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
