@@ -4,6 +4,7 @@ import pyautogui as pg
 from src.AI.utils.TowerData import tower_data
 import time
 import BloonsAI
+import numpy as np
 
 # If the tower is placed at greater than or equal to 835 in the X direction, then the upgrade path will
 # appear on the left side of the screen. If X is less than 835, then the upgrade will be on the right
@@ -117,3 +118,11 @@ def setup_grid():
         for i in range(0, 1600, 80):
             grid.append((i, j))
     return grid
+
+def normalize(dict):
+    for key in dict:
+        ar = dict[key]
+        sum_ar = np.sum(ar)
+        for i in range(len(ar)):
+            ar[i] = ar[i]/sum_ar
+    return dict

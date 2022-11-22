@@ -159,6 +159,7 @@ def train():
         if load:
             cur_genes = fp.read_genetics()
             generation_num = fp.get_generation_num()
+            grid_vals = util.normalize(fp.read_grid_vals())
         else:
             cur_genes = base_genes
             generation_num = 0
@@ -197,10 +198,10 @@ def train():
         for gene in cur_genes:
             print("<============Beginning Game ", ind,"============>")
             print(gene)
-            new_game = Game(gene, difficulty, False, learning_rate)
+            new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             while(new_game is None):
                 util.full_restart(difficulty)
-                new_game = Game(gene, difficulty, False, learning_rate)
+                new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             round, length, game_genes, towers, upgrades = new_game.run_game()
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes, towers, upgrades])

@@ -53,3 +53,6 @@ def get_best_scores():
 
 
 # create_gen_info_file()
+
+def read_grid_vals():
+    pass
