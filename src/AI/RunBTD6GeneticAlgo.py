@@ -21,27 +21,6 @@ def load_genetics():
     """
     return {}
 
-
-def full_restart_game():
-    pg.click(util.home)
-    time.sleep(5)
-    pg.click(exit)
-    time.sleep(3)
-    pg.click(quit)
-    time.sleep(10)
-    pg.click(util.steam_play)
-    time.sleep(35)
-    pg.click(util.start_game)
-    time.sleep(5)
-    pg.click(util.play_game)
-    time.sleep(5)
-    pg.click(util.monkey_meadow)
-    time.sleep(5)
-    pg.click(util.meadow_easy)
-    time.sleep(5)
-    pg.click(util.meadow_standard)
-    time.sleep(5)
-
 def create_grid():
     grid = []
     for j in range(80, 1000, 68):
@@ -49,6 +28,32 @@ def create_grid():
             pos = (i, j)
             grid.append(pos)
     return grid
+
+def get_grid_num(grid, loc):
+    shortest = math.dist(grid[0], loc)
+    shortest_index = 0
+    for i in range(1, len(grid)):
+        dist = math.dist(grid[i], loc)
+        if dist < shortest:
+            shortest = dist
+            shortest_index = i
+    return shortest_index
+
+def update_monkey_loc(avg_round, best_games):
+    monkey_locations = fp.read_grid_vals()
+    grid = util.setup_grid()
+    for game in best_games:
+        actions = game[2]
+        game_round = game[0]
+        for act in actions:
+            if act[0] == "upgrade":
+                continue
+            grid_num = get_grid_num(grid, act[2])
+            monkey_locations[act[1]][grid_num] = monkey_locations[act[1]][grid_num] + (game_round - avg_round)
+            if monkey_locations[act[1]][grid_num] < 1: 
+                monkey_locations[act[1]][grid_num] = 1
+    fp.write_grid_vals(monkey_locations)
+
 
 def train():
 
@@ -142,15 +147,9 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        [["place_hero", (627, 503)]],
-        [["place_hero", (300, 600)]],
-        [["place_hero", (700, 303)]],
-        # ["place_tower", "ninja_monkey", (630, 402)],
-        # ["place_tower", "bomb_shooter", (630, 402)],
-        # ["place_tower", "dart_monkey", (630, 402)],
-        # ["place_tower", "ninja_monkey", (900, 600)],
-        # ["place_tower", "bomb_shooter", (300, 300)],
-        # ["place_tower", "dart_monkey", (400, 400)]
+        [["place_hero", "hero_monkey", (627, 503)]],
+        [["place_hero", "hero_monkey", (300, 600)]],
+        #[["place_hero", "hero_monkey", (700, 303)]],
     ]
 
     
@@ -159,13 +158,17 @@ def train():
         if load:
             cur_genes = fp.read_genetics()
             generation_num = fp.get_generation_num()
+            grid_vals = util.normalize(fp.read_grid_vals())
         else:
             cur_genes = base_genes
             generation_num = 0
+            grid_vals = util.instantiate_grid_vals()
+            fp.write_grid_vals(grid_vals)
+            grid_vals = util.normalize(grid_vals)
 
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
-            for _ in range(2):
+            for _ in range(4):
                 split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
                 game1 = list(cur_genes[0])
                 game2 = list(cur_genes[1])
@@ -180,6 +183,10 @@ def train():
 
             cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
             cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
+            cur_genes.append(list(cur_genes[0])[:random.randint(1, math.ceil(len(cur_genes[0])/2))])
+            cur_genes.append(list(cur_genes[1])[:random.randint(1, math.ceil(len(cur_genes[1])/2))])
+            cur_genes.append([["place_hero", "hero_monkey", (627, 503)]])
+            cur_genes.append([["place_hero", "hero_monkey", (700, 303)]])
 
         for each in cur_genes:
             print(each)
@@ -194,21 +201,25 @@ def train():
         generation_num += 1
         # Go through all current individuals and run game
         ind = 1
+        total_rounds = 0
         for gene in cur_genes:
             print("<============Beginning Game ", ind,"============>")
             print(gene)
-            new_game = Game(gene, difficulty, False, learning_rate)
+            new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             while(new_game is None):
                 util.full_restart(difficulty)
-                new_game = Game(gene, difficulty, False, learning_rate)
+                new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             round, length, game_genes, towers, upgrades = new_game.run_game()
+            total_rounds += round
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes, towers, upgrades])
             util.restart_game()
             ind+=1
 
+        avg_round = total_rounds/len(cur_genes)
+        update_monkey_loc(avg_round, best_games)
+        
         # Get the best individual
-        total_rounds = 0
         total_towers = 0
         total_upgrades = 0
         highest = 0
