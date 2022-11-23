@@ -56,6 +56,7 @@ class Game:
         self.round = difficulty["round"]
         self.round_timer = 0
         self.grid_vals = grid_vals
+        print(self.grid_vals)
 
         # if cache:
         #     self.mydict = BloonsAI.initialize()
@@ -230,15 +231,15 @@ class Game:
             self.towers[loc] = cur_monkey
             act = ["place_tower", action[1], loc]
         elif action[0] == "place_hero":
-            loc = action[1]
+            loc = action[2]
             # Possible to not place in base spot
             if random.random() <= self.alpha:
                 loc = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals["hero_monkey"]))]
             status, pos = self.place_tower("hero_monkey", loc)
             if not status:
-                action[1] = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals["hero_monkey"]))]
+                action[2] = self.grid[(np.random.choice(np.array(self.grid).shape[0], p=self.grid_vals["hero_monkey"]))]
                 return False
-            act = ["place_hero", pos]
+            act = ["place_hero", "hero_monkey", pos]
         else:
             self.upgrades += 1
             monkey_to_upgrade = self.towers[action[2]]

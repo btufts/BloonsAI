@@ -1,7 +1,7 @@
 # Utility functions and variables
 
-#import pyautogui as pg
-#from src.AI.utils.TowerData import tower_data
+import pyautogui as pg
+from src.AI.utils.TowerData import tower_data
 import time
 import BloonsAI
 import numpy as np
@@ -132,3 +132,5 @@ def instantiate_grid_vals():
     for monkey in towers:
         starting_vals = [100] * 280
         grid_vals[monkey] = starting_vals
+    grid_vals["hero_monkey"] = [100] * 280
+    return grid_vals

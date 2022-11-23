@@ -21,27 +21,6 @@ def load_genetics():
     """
     return {}
 
-
-def full_restart_game():
-    pg.click(util.home)
-    time.sleep(5)
-    pg.click(exit)
-    time.sleep(3)
-    pg.click(quit)
-    time.sleep(10)
-    pg.click(util.steam_play)
-    time.sleep(35)
-    pg.click(util.start_game)
-    time.sleep(5)
-    pg.click(util.play_game)
-    time.sleep(5)
-    pg.click(util.monkey_meadow)
-    time.sleep(5)
-    pg.click(util.meadow_easy)
-    time.sleep(5)
-    pg.click(util.meadow_standard)
-    time.sleep(5)
-
 def create_grid():
     grid = []
     for j in range(80, 1000, 68):
@@ -70,7 +49,7 @@ def update_monkey_loc(avg_round, best_games):
             if act[0] == "upgrade":
                 continue
             grid_num = get_grid_num(grid, act[2])
-            monkey_locations[act[1]] = monkey_locations[act[1]][grid_num] + (game_round - avg_round)
+            monkey_locations[act[1]][grid_num] = monkey_locations[act[1]][grid_num] + (game_round - avg_round)
             if monkey_locations[act[1]][grid_num] < 1: 
                 monkey_locations[act[1]][grid_num] = 1
     fp.write_grid_vals(monkey_locations)
@@ -168,9 +147,9 @@ def train():
     time.sleep(2)
 
     base_genes = [
-        [["place_hero", (627, 503)]],
-        [["place_hero", (300, 600)]],
-        [["place_hero", (700, 303)]],
+        [["place_hero", "hero_monkey", (627, 503)]],
+        [["place_hero", "hero_monkey", (300, 600)]],
+        #[["place_hero", "hero_monkey", (700, 303)]],
     ]
 
     
@@ -184,6 +163,8 @@ def train():
             cur_genes = base_genes
             generation_num = 0
             grid_vals = util.instantiate_grid_vals()
+            fp.write_grid_vals(grid_vals)
+            grid_vals = util.normalize(grid_vals)
 
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
@@ -204,8 +185,8 @@ def train():
             cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
             cur_genes.append(list(cur_genes[0])[:random.randint(1, math.ceil(len(cur_genes[0])/2))])
             cur_genes.append(list(cur_genes[1])[:random.randint(1, math.ceil(len(cur_genes[1])/2))])
-            cur_genes.append(["place_hero", (627, 503)])
-            cur_genes.append(["place_hero", (700, 303)])
+            cur_genes.append([["place_hero", "hero_monkey", (627, 503)]])
+            cur_genes.append([["place_hero", "hero_monkey", (700, 303)]])
 
         for each in cur_genes:
             print(each)
