@@ -56,7 +56,7 @@ class Game:
         self.round = difficulty["round"]
         self.round_timer = 0
         self.grid_vals = grid_vals
-        print(self.grid_vals)
+        #print(self.grid_vals)
 
         # if cache:
         #     self.mydict = BloonsAI.initialize()
@@ -103,12 +103,15 @@ class Game:
             self.max_spend = 1000*math.exp(self.round/15)+200
 
     def run_game(self):
+        util.scroll(False)
         while((len(self.genetics) > 0 and self.genetics[0][0] == "upgrade") or (len(self.genetics) > 0 and self.check_cash(self.genetics[0]) > self.state["money"])):
             self.genetics.pop(0)
         if(len(self.genetics) == 0):
             first_action = self.generate_action()
             self.genetics.append(first_action)
-        self.perform_action(self.genetics[0])
+        success = self.perform_action(self.genetics[0])
+        while not success:
+            success = self.perform_action(self.genetics[0])
         self.start_round()
         time.sleep(1)
         self.start_round()

@@ -149,7 +149,7 @@ def train():
     base_genes = [
         [["place_hero", "hero_monkey", (627, 503)]],
         [["place_hero", "hero_monkey", (300, 600)]],
-        #[["place_hero", "hero_monkey", (700, 303)]],
+        [["place_hero", "hero_monkey", (700, 303)]],
     ]
 
     
@@ -168,7 +168,7 @@ def train():
 
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
-            for _ in range(4):
+            for i in range(2):
                 split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
                 game1 = list(cur_genes[0])
                 game2 = list(cur_genes[1])
@@ -178,24 +178,55 @@ def train():
                 game2_half2 = game2[split:]
                 game1_half1.extend(game2_half2)
                 game2_half1.extend(game1_half2)
+                if i == 1:
+                    first_act = game1_half1[0]
+                    second_act = game2_half1[0]
+                    game1_half1.pop(0)
+                    game2_half1.pop(0)
+                    random.shuffle(game1_half1)
+                    random.shuffle(game2_half1)
+                    game1_half1.insert(0, first_act)
+                    game2_half1.insert(0, second_act)
                 cur_genes.append(game1_half1)
                 cur_genes.append(game2_half1)
+            
+            for _ in range(2):
+                game = []
+                for i in range(min(len(cur_genes[0]), len(cur_genes[1]))):
+                    c = random.choice([0,1])
+                    game.append(cur_genes[c][i])
+                cur_genes.append(game)
+
+            for _ in range(2):
+                game = cur_genes[0].copy()
+                first_act = game[0]
+                game.pop(0)
+                random.shuffle(game)
+                game.insert(0, first_act)
+                cur_genes.append(game)
+                
 
             cur_genes.append(list(cur_genes[0])[:random.randint(math.floor(len(cur_genes[0])/2), len(cur_genes[0])-1)])
             cur_genes.append(list(cur_genes[1])[:random.randint(math.floor(len(cur_genes[1])/2), len(cur_genes[1])-1)])
             cur_genes.append(list(cur_genes[0])[:random.randint(1, math.ceil(len(cur_genes[0])/2))])
-            cur_genes.append(list(cur_genes[1])[:random.randint(1, math.ceil(len(cur_genes[1])/2))])
+            cur_genes.append([["place_hero", "hero_monkey", (300, 600)]])
             cur_genes.append([["place_hero", "hero_monkey", (627, 503)]])
             cur_genes.append([["place_hero", "hero_monkey", (700, 303)]])
 
         for each in cur_genes:
             print(each)
 
-        best_scores = fp.get_best_scores()
-        first_best = cur_genes[0]
-        first_best_scores = [best_scores[0], best_scores[1]]
-        second_best = cur_genes[1]
-        second_best_scores = [best_scores[2], best_scores[3]]
+        first_best = None
+        first_best_scores = [0, 0]
+        second_best = None
+        second_best_scores = [0, 0]
+
+        if generation_num > 0:
+            best_scores = fp.get_best_scores()
+            first_best = cur_genes[0]
+            first_best_scores = [best_scores[0], best_scores[1]]
+            second_best = cur_genes[1]
+            second_best_scores = [best_scores[2], best_scores[3]]
 
         best_games = []
         generation_num += 1
@@ -213,7 +244,11 @@ def train():
             total_rounds += round
             print("Round: ", round, " - Time: ", length)
             best_games.append([round, length, game_genes, towers, upgrades])
-            util.restart_game()
+            if ind % 4 == 0:
+                print("Restarting")
+                util.full_restart(difficulty)
+            else:
+                util.restart_game()
             ind+=1
 
         avg_round = total_rounds/len(cur_genes)
@@ -224,10 +259,10 @@ def train():
         total_upgrades = 0
         highest = 0
         lowest = 1000
+        best_round = fp.read_best_round()
         for each in best_games:
             num_rounds = each[0]
             time_game = each[1]
-            total_rounds += num_rounds
             total_towers += each[3]
             total_upgrades += each[4]
             highest = max(highest, num_rounds)
@@ -250,6 +285,9 @@ def train():
                 if time_game > second_best_scores[1]:
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
+
+        if first_best_scores[0] > best_round:
+            fp.write_best_game(first_best_scores[0], first_best)
+        load = True
         fp.save_genetics(first_best, second_best)
         fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1], total_rounds/len(best_games), total_towers/len(best_games), total_upgrades/len(best_games), highest, lowest)
-        util.full_restart(difficulty)

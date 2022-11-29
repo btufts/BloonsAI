@@ -6,6 +6,7 @@ import sys
 genetics_file = os.path.join(sys.path[0], "src", "AI", "utils", "genetics.json")
 generation_info_file = os.path.join(sys.path[0], "src", "AI", "utils", "generation_info.csv")
 grid_vals_file = os.path.join(sys.path[0], "src", "AI", "utils", "grid_vals.json")
+best_game_file = os.path.join(sys.path[0], "src", "AI", "utils", "best_game.json")
 
 # read_genetics and save_genetics:
 # https://www.geeksforgeeks.org/reading-and-writing-json-to-a-file-in-python/
@@ -62,4 +63,17 @@ def read_grid_vals():
 def write_grid_vals(grid_vals):
     json_object = json.dumps(grid_vals, indent=4)
     with open(grid_vals_file, "w") as outfile:
+        outfile.write(json_object)
+
+def read_best_round():
+    try:
+        with open(best_game_file, 'r') as openfile:
+            json_object = json.load(openfile)
+        return json_object[0]
+    except:
+        return 0
+
+def write_best_game(round, actions):
+    json_object = json.dumps([round, actions], indent=4)
+    with open(best_game_file, "w") as outfile:
         outfile.write(json_object)
