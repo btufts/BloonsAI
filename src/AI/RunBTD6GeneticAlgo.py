@@ -155,6 +155,8 @@ def train():
     
     for _ in range(gens):
 
+        print("<============ START GENERATION ============>")
+
         if load:
             cur_genes = fp.read_genetics()
             generation_num = fp.get_generation_num()
@@ -166,12 +168,19 @@ def train():
             fp.write_grid_vals(grid_vals)
             grid_vals = util.normalize(grid_vals)
 
+        print("<============ PARENT 1 ============>")
+        print(cur_genes[0])
+        print("<============ PARENT 2 ============>")
+        print(cur_genes[1])
+        print("<============ BEST SCORES ============>")
+        print(fp.get_best_scores())
+
         # create offspring here
         if len(cur_genes[0]) >=2 and len(cur_genes[1]) >=2:
             for i in range(2):
                 split = random.randint(1, min(len(cur_genes[0]), len(cur_genes[1]))-1)
-                game1 = list(cur_genes[0])
-                game2 = list(cur_genes[1])
+                game1 = cur_genes[0].copy()
+                game2 = cur_genes[1].copy()
                 game1_half1 = game1[:split]
                 game1_half2 = game1[split:]
                 game2_half1 = game2[:split]
@@ -213,6 +222,8 @@ def train():
             cur_genes.append([["place_hero", "hero_monkey", (627, 503)]])
             cur_genes.append([["place_hero", "hero_monkey", (700, 303)]])
 
+
+        print("<============ ALL GAMES ============>")
         for each in cur_genes:
             print(each)
 
@@ -223,9 +234,9 @@ def train():
 
         if generation_num > 0:
             best_scores = fp.get_best_scores()
-            first_best = cur_genes[0]
+            first_best = cur_genes[0].copy()
             first_best_scores = [best_scores[0], best_scores[1]]
-            second_best = cur_genes[1]
+            second_best = cur_genes[1].copy()
             second_best_scores = [best_scores[2], best_scores[3]]
 
         best_games = []
@@ -234,7 +245,7 @@ def train():
         ind = 1
         total_rounds = 0
         for gene in cur_genes:
-            print("<============Beginning Game ", ind,"============>")
+            print("<============ START GAME ", ind,"============>")
             print(gene)
             new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             while(new_game is None):
@@ -242,7 +253,11 @@ def train():
                 new_game = Game(gene, difficulty, False, learning_rate, grid_vals)
             round, length, game_genes, towers, upgrades = new_game.run_game()
             total_rounds += round
+            print("<============ GAME STATS ============>")
             print("Round: ", round, " - Time: ", length)
+            print("<============ GAME ACTIONS ============>")
+            print(game_genes)
+            print("<============ ENG GAME ", ind, "============>")
             best_games.append([round, length, game_genes, towers, upgrades])
             if ind % 4 == 0:
                 print("Restarting")
@@ -255,6 +270,10 @@ def train():
         update_monkey_loc(avg_round, best_games)
         
         # Get the best individual
+        print("<============ ALL GAMES ============>")
+        for i in range(len(best_games)):
+            print("<============ GAME ", i, "============>")
+            print(best_games[i])
         total_towers = 0
         total_upgrades = 0
         highest = 0
@@ -286,8 +305,17 @@ def train():
                     second_best = each[2]
                     second_best_scores = [each[0], each[1]]
 
+        print("<============ BEST GAME ============>")
+        print(first_best)
+        print(first_best_scores)
+        print("<============ BEST GAME 2 ============>")
+        print(second_best)
+        print(second_best_scores)
+
         if first_best_scores[0] > best_round:
             fp.write_best_game(first_best_scores[0], first_best)
         load = True
         fp.save_genetics(first_best, second_best)
         fp.save_gen_info(generation_num, first_best_scores[0], first_best_scores[1], second_best_scores[0], second_best_scores[1], total_rounds/len(best_games), total_towers/len(best_games), total_upgrades/len(best_games), highest, lowest)
+
+        print("<============ END GENERATION ============>")

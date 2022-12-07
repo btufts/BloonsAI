@@ -1,6 +1,7 @@
 import time
 import sys
 import src.AI.RunBTD6GeneticAlgo as training
+import src.AI.RunBTD6Best as testing
 
 
 
@@ -13,7 +14,7 @@ def main():
         case "T":
             training.train()
         case 'R':
-            print("Run Best Algo so far (not implimented)")
+            testing.test()
     
 
 

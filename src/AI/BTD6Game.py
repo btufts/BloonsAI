@@ -88,7 +88,7 @@ class Game:
         pg.click(self.start_button)
 
     def save_genetics(self):
-        print("<================ GENETICS ================>")
+        print("<================ IN GAME GENETICS ================>")
         print(self.action_list)
         print("<============= END OF GENETICS =============>")
 
@@ -124,9 +124,9 @@ class Game:
             if action < num_actions:
                 next_action = self.genetics[action]
                 self.update_state()
-                print("<========== CURRENT TOWER LIST ==========>")
-                for tower in self.towers:
-                    print("Tower: ", tower)
+                # print("<========== CURRENT TOWER LIST ==========>")
+                # for tower in self.towers:
+                #     print("Tower: ", tower)
                 if next_action[0] == "upgrade":
                     possible = self.verify_upgrade(next_action)
                     if not possible:
@@ -137,20 +137,20 @@ class Game:
                             continue
                         else:
                             next_action = new_action
-                print(self.state["money"], " - ", next_action, " - ", 
-                        self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
-                        self.action_ratio[1])
-                if next_action[0] == "upgrade":
-                        print("Tower to upgrade: ", self.towers[next_action[2]])
+                # print(self.state["money"], " - ", next_action, " - ", 
+                #         self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
+                #         self.action_ratio[1])
+                # if next_action[0] == "upgrade":
+                #         print("Tower to upgrade: ", self.towers[next_action[2]])
                 while self.check_cash(next_action) > self.state["money"] and self.state["lives"] > 0:
                     if self.state["round"] == self.state["max_round"]:
                         util.start_freeplay()
                     self.update_state()
-                    print(self.state["money"], " - ", next_action, " - ", 
-                        self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
-                        self.action_ratio[1])
-                    if next_action[0] == "upgrade":
-                        print("Tower to upgrade: ", self.towers[next_action[2]])
+                    # print(self.state["money"], " - ", next_action, " - ", 
+                    #     self.check_cash(next_action), " - ", self.action_ratio[0], "/", 
+                    #     self.action_ratio[1])
+                    # if next_action[0] == "upgrade":
+                    #     print("Tower to upgrade: ", self.towers[next_action[2]])
                     if self.state["round"] > self.round:
                         self.round += 1
                         self.update_ratio()
@@ -161,10 +161,13 @@ class Game:
                         if time.time() - self.round_timer >= 300:
                             self.retry_start_round()
                         time.sleep(0.5)
-                print("Performing Action: ", (next_action))
+                if(self.state["lives"] <= 0): 
+                    break
+                # print("Performing Action: ", (next_action))
                 if self.perform_action(next_action):
                     action += 1
                     while action < num_actions and self.genetics[action][0] == "upgrade" and not self.verify_upgrade(self.genetics[action]):
+                        print("Fixing Upgrade")
                         new_action = self.fix_upgrade(self.genetics[action])
                         if not new_action:
                             self.genetics.remove(self.genetics[action])
@@ -183,7 +186,7 @@ class Game:
                             self.genetics[action] = new_action
                     time.sleep(0.2)
             else:
-                print("Generating Action")
+                # print("Generating Action")
                 next_act = self.generate_action()
                 self.genetics.append(next_act)
                 num_actions += 1
@@ -205,9 +208,9 @@ class Game:
             act = [first_act, tower_to_place, location_to_place]
             return act
         else:
-            print("TOWER LIST: ")
-            for key, value in self.towers.items():
-                print(key, ": ", value)
+            # print("TOWER LIST: ")
+            # for key, value in self.towers.items():
+            #     print(key, ": ", value)
             towers_to_upgrade = list(self.towers.keys())
             random.shuffle(towers_to_upgrade)
             for i in range(len(towers_to_upgrade)):
